@@ -15,7 +15,19 @@
   "assigned_to",
   "column_break_bavp0",
   "status",
-  "priority"
+  "priority",
+  "linked_documents_section",
+  "invoives_customer",
+  "customer",
+  "sales_order",
+  "sales_invoice",
+  "column_break_o1wu2",
+  "invoives_supplier",
+  "purchase_order",
+  "purhcase_receipt",
+  "purchase_invoice",
+  "column_break_sy8gu",
+  "invoives_item"
  ],
  "fields": [
   {
@@ -78,12 +90,79 @@
    "label": "Priority",
    "options": "Assist Priority",
    "reqd": 1
+  },
+  {
+   "fieldname": "linked_documents_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
+  },
+  {
+   "default": "0",
+   "fieldname": "invoives_customer",
+   "fieldtype": "Check",
+   "label": "Invoives Customer?"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order ",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fieldname": "column_break_o1wu2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "invoives_supplier",
+   "fieldtype": "Check",
+   "label": "Invoives Supplier?"
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "purhcase_receipt",
+   "fieldtype": "Link",
+   "label": "Purhcase Receipt",
+   "options": "Purchase Receipt"
+  },
+  {
+   "fieldname": "purchase_invoice",
+   "fieldtype": "Link",
+   "label": "Purchase Invoice",
+   "options": "Purchase Invoice"
+  },
+  {
+   "fieldname": "column_break_sy8gu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoives_item",
+   "fieldtype": "Link",
+   "label": "Invoives Item?",
+   "options": "Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "links": [],
- "modified": "2024-10-15 11:51:53.847670",
+ "modified": "2024-10-15 13:42:35.412976",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
