@@ -213,3 +213,8 @@ app_license = "MIT"
 # auth_hooks = [
 # 	"assist.auth.validate"
 # ]
+
+#Fixtures
+fixtures = [
+    {"doctype": "Assist Priority"}
+]
