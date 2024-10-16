@@ -33,6 +33,44 @@ frappe.ui.form.on("Assist", {
       frm.set_value("raised_by", frappe.session.user);
     }
   },
+
+  status: function (frm) {
+    if (frm.doc.status === "In Progress") {
+      // first_responded empty?
+      if (!frm.doc.first_responded_on) {
+        let nairobiDatetime = new Date().toLocaleString("en-KE", {
+          timeZone: "Africa/Nairobi",
+        });
+
+        frm.set_value("first_responded_on", nairobiDatetime);
+        console.log("first_responded_on", nairobiDatetime + " is set");
+      }
+
+      // save the form
+      frm.save();
+    }
+
+    //  status == Closed, set closed on value
+    if (frm.doc.status === "Closed") {
+      let nairobiDatetime = new Date().toLocaleString("en-KE", {
+        timeZone: "Africa/Nairobi",
+      });
+
+      frm.set_value("resolved_on", nairobiDatetime);
+      console.log("resolved_on", nairobiDatetime + " is set");
+
+      frm.save();
+    }
+
+    if (frm.doc.status !== "Closed") {
+      // clear resolved_on if it has value
+      if (frm.doc.resolved_on) {
+        frm.set_value("resolved_on", "");
+      }
+
+      frm.save();
+    }
+  },
 });
 
 // toggle_necessary_fields function
@@ -45,12 +83,7 @@ function toggle_necessary_fields(frm) {
 
   //  toggle lists
   let customer_fields = ["customer", "sales_order", "sales_invoice"];
-  let supplier_fields = [
-    "supplier",
-    "purchase_order",
-    "purchase_receipt",
-    "purchase_invoice",
-  ];
+  let supplier_fields = ["supplier", "purchase_order", "purchase_receipt", "purchase_invoice"];
 
   //   toggle customer fields
   if (involves_customer) {

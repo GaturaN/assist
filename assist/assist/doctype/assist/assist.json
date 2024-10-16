@@ -100,6 +100,7 @@
    "options": "Open\nIn Progress\nEscalated\nClosed"
   },
   {
+   "default": "Medium",
    "fieldname": "priority",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -192,13 +193,15 @@
   },
   {
    "fieldname": "first_responded_on",
-   "fieldtype": "Duration",
-   "label": "First Responded On"
+   "fieldtype": "Data",
+   "label": "First Responded On",
+   "read_only": 1
   },
   {
    "fieldname": "resolved_on",
-   "fieldtype": "Duration",
-   "label": "Resolved On"
+   "fieldtype": "Data",
+   "label": "Resolved On",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -234,7 +237,7 @@
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "links": [],
- "modified": "2024-10-16 20:55:52.456448",
+ "modified": "2024-10-16 22:57:52.818349",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
