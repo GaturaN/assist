@@ -17,17 +17,27 @@
   "status",
   "priority",
   "linked_documents_section",
-  "invoives_customer",
+  "involves_customer",
   "customer",
   "sales_order",
   "sales_invoice",
   "column_break_o1wu2",
-  "invoives_supplier",
+  "involves_supplier",
+  "supplier",
   "purchase_order",
-  "purhcase_receipt",
+  "purchase_receipt",
   "purchase_invoice",
   "column_break_sy8gu",
-  "invoives_item"
+  "involves_item",
+  "item",
+  "involves_payment",
+  "payment_entry",
+  "details_section_section",
+  "description",
+  "issue_attachment",
+  "section_break_k93ec",
+  "first_responded_on",
+  "resolved_on"
  ],
  "fields": [
   {
@@ -50,6 +60,7 @@
    "fieldtype": "Data",
    "in_filter": 1,
    "in_global_search": 1,
+   "in_list_view": 1,
    "label": "Subject",
    "reqd": 1
   },
@@ -57,10 +68,13 @@
    "bold": 1,
    "fieldname": "raised_by",
    "fieldtype": "Data",
+   "in_filter": 1,
    "in_global_search": 1,
    "in_list_view": 1,
-   "label": "Raised By (Email)",
-   "options": "Email"
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Raised By",
+   "read_only": 1
   },
   {
    "allow_in_quick_entry": 1,
@@ -81,12 +95,14 @@
    "default": "Open",
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Status",
    "options": "Open\nIn Progress\nEscalated\nClosed"
   },
   {
    "fieldname": "priority",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Priority",
    "options": "Assist Priority",
    "reqd": 1
@@ -95,12 +111,6 @@
    "fieldname": "linked_documents_section",
    "fieldtype": "Section Break",
    "label": "Linked Documents"
-  },
-  {
-   "default": "0",
-   "fieldname": "invoives_customer",
-   "fieldtype": "Check",
-   "label": "Invoives Customer?"
   },
   {
    "fieldname": "customer",
@@ -125,22 +135,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "0",
-   "fieldname": "invoives_supplier",
-   "fieldtype": "Check",
-   "label": "Invoives Supplier?"
-  },
-  {
    "fieldname": "purchase_order",
    "fieldtype": "Link",
    "label": "Purchase Order",
    "options": "Purchase Order"
-  },
-  {
-   "fieldname": "purhcase_receipt",
-   "fieldtype": "Link",
-   "label": "Purhcase Receipt",
-   "options": "Purchase Receipt"
   },
   {
    "fieldname": "purchase_invoice",
@@ -153,16 +151,90 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "invoives_item",
+   "fieldname": "item",
    "fieldtype": "Link",
-   "label": "Invoives Item?",
+   "label": "Item",
    "options": "Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "involves_payment",
+   "fieldtype": "Check",
+   "label": "Involves Payment?"
+  },
+  {
+   "fieldname": "payment_entry",
+   "fieldtype": "Link",
+   "label": "Payment Entry",
+   "options": "Payment Entry"
+  },
+  {
+   "fieldname": "details_section_section",
+   "fieldtype": "Section Break",
+   "label": "Details Section"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "issue_attachment",
+   "fieldtype": "Attach",
+   "label": "Issue Attachment"
+  },
+  {
+   "fieldname": "section_break_k93ec",
+   "fieldtype": "Section Break",
+   "label": "Resposnse Details"
+  },
+  {
+   "fieldname": "first_responded_on",
+   "fieldtype": "Duration",
+   "label": "First Responded On"
+  },
+  {
+   "fieldname": "resolved_on",
+   "fieldtype": "Duration",
+   "label": "Resolved On"
+  },
+  {
+   "default": "0",
+   "fieldname": "involves_item",
+   "fieldtype": "Check",
+   "label": "Involves Item?"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "purchase_receipt",
+   "fieldtype": "Link",
+   "label": "Purchase Receipt",
+   "options": "Purchase Receipt"
+  },
+  {
+   "default": "0",
+   "fieldname": "involves_customer",
+   "fieldtype": "Check",
+   "label": "Involves Customer?"
+  },
+  {
+   "default": "0",
+   "fieldname": "involves_supplier",
+   "fieldtype": "Check",
+   "label": "Involves Supplier?"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "links": [],
- "modified": "2024-10-15 13:42:35.412976",
+ "modified": "2024-10-16 20:55:52.456448",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
