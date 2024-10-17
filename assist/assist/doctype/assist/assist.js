@@ -5,6 +5,7 @@ frappe.ui.form.on("Assist", {
   refresh: function (frm) {
     // Call the function to toggle necessary fields on refresh
     toggle_necessary_fields(frm);
+    custom_buttons(frm);
   },
 
   involves_customer: function (frm) {
@@ -109,5 +110,37 @@ function toggle_necessary_fields(frm) {
     frm.toggle_display("payment_entry", true);
   } else {
     frm.toggle_display("payment_entry", false);
+  }
+}
+
+function custom_buttons(frm) {
+  // check if document is submitted
+  //   let submitted = frm.doc.docstatus === 1;
+  let status = frm.doc.status;
+
+  if (status === "Open") {
+    frm.add_custom_button("In Progress", () => {
+      frm.set_value("status", "In Progress");
+      frm.save();
+    });
+  }
+
+  if (status === "In Progress") {
+    frm.add_custom_button(
+      "Close",
+      () => {
+        frm.set_value("status", "Closed");
+        frm.save();
+      },
+      "Set Status"
+    );
+    frm.add_custom_button(
+      "Escalate",
+      () => {
+        frm.set_value("status", "Escalated");
+        frm.save();
+      },
+      "Set Status"
+    );
   }
 }
