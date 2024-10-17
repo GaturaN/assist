@@ -16,6 +16,7 @@
   "column_break_bavp0",
   "status",
   "priority",
+  "close_in",
   "linked_documents_section",
   "involves_customer",
   "customer",
@@ -37,7 +38,8 @@
   "issue_attachment",
   "section_break_k93ec",
   "first_responded_on",
-  "resolved_on"
+  "resolved_on",
+  "amended_from"
  ],
  "fields": [
   {
@@ -92,12 +94,14 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "default": "Open",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Open\nIn Progress\nEscalated\nClosed"
+   "options": "Open\nIn Progress\nEscalated\nClosed",
+   "read_only": 1
   },
   {
    "default": "Medium",
@@ -232,12 +236,27 @@
    "fieldname": "involves_supplier",
    "fieldtype": "Check",
    "label": "Involves Supplier?"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Assist",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "close_in",
+   "fieldtype": "Duration",
+   "label": "Close In"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "links": [],
- "modified": "2024-10-16 22:57:52.818349",
+ "modified": "2024-10-17 23:51:53.161606",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
