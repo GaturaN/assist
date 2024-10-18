@@ -16,9 +16,6 @@
   "column_break_bavp0",
   "progress_status",
   "priority",
-  "close_in",
-  "first_responded_on",
-  "resolved_on",
   "linked_documents_section",
   "involves_customer",
   "customer",
@@ -39,6 +36,8 @@
   "description",
   "issue_attachment",
   "section_break_k93ec",
+  "first_responded_on",
+  "resolved_on",
   "amended_from"
  ],
  "fields": [
@@ -190,16 +189,14 @@
    "bold": 1,
    "fieldname": "first_responded_on",
    "fieldtype": "Data",
-   "label": "First Responded On",
-   "read_only": 1
+   "label": "First Responded On"
   },
   {
    "allow_on_submit": 1,
    "bold": 1,
    "fieldname": "resolved_on",
    "fieldtype": "Data",
-   "label": "Resolved On",
-   "read_only": 1
+   "label": "Resolved On"
   },
   {
    "default": "0",
@@ -242,11 +239,6 @@
    "search_index": 1
   },
   {
-   "fieldname": "close_in",
-   "fieldtype": "Duration",
-   "label": "Close In"
-  },
-  {
    "allow_on_submit": 1,
    "default": "Open",
    "fieldname": "progress_status",
@@ -261,7 +253,7 @@
  "is_calendar_and_gantt": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-18 12:17:43.358158",
+ "modified": "2024-10-18 12:45:18.214226",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",

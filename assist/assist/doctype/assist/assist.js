@@ -45,6 +45,7 @@ frappe.ui.form.on("Assist", {
 
         frm.set_value("first_responded_on", nairobiDatetime);
         console.log("first_responded_on", nairobiDatetime + " is set");
+        frm.save();
       }
 
       // save the form
@@ -120,7 +121,8 @@ function custom_buttons(frm) {
   let saved = frm.doc.docstatus === 1;
 
   if (status === "Open" && saved) {
-    frm.add_custom_button("In Progress", () => {
+    frm
+      .add_custom_button("In Progress", () => {
         frm.set_value("progress_status", "In Progress");
         auto_update_document(frm);
       })
@@ -128,24 +130,30 @@ function custom_buttons(frm) {
   }
 
   if (status === "In Progress") {
-    frm.add_custom_button("Close", () => {
+    frm
+      .add_custom_button("Close", () => {
         frm.set_value("progress_status", "Closed");
         auto_update_document(frm);
       })
-      .addClass("btn-success").removeClass("btn-default");
-    frm.add_custom_button("Escalate", () => {
+      .addClass("btn-success")
+      .removeClass("btn-default");
+    frm
+      .add_custom_button("Escalate", () => {
         frm.set_value("progress_status", "Escalated");
         auto_update_document(frm);
       })
-      .addClass("btn-warning").removeClass("btn-default");
+      .addClass("btn-warning")
+      .removeClass("btn-default");
   }
 
-  if(status === "Escalated") {
-    frm.add_custom_button("Close", () => {
+  if (status === "Escalated") {
+    frm
+      .add_custom_button("Close", () => {
         frm.set_value("progress_status", "Closed");
         auto_update_document(frm);
       })
-      .addClass("btn-success").removeClass("btn-default");
+      .addClass("btn-success")
+      .removeClass("btn-default");
   }
 }
 
@@ -165,3 +173,12 @@ function auto_update_document(frm) {
     },
   });
 }
+
+
+frappe.realtime.on('assist_assigned', function(data) {
+    // Display the notification on the screen
+    frappe.show_alert({
+        message: data.message,
+        indicator: 'green' // You can change this color based on your needs
+    });
+});
