@@ -35,8 +35,8 @@ frappe.ui.form.on("Assist", {
     }
   },
 
-  status: function (frm) {
-    if (frm.doc.status === "In Progress") {
+  progress_status: function (frm) {
+    if (frm.doc.progress_status === "In Progress") {
       // first_responded empty?
       if (!frm.doc.first_responded_on) {
         let nairobiDatetime = new Date().toLocaleString("en-KE", {
@@ -52,7 +52,7 @@ frappe.ui.form.on("Assist", {
     }
 
     //  status == Closed, set closed on value
-    if (frm.doc.status === "Closed") {
+    if (frm.doc.progress_status === "Closed") {
       let nairobiDatetime = new Date().toLocaleString("en-KE", {
         timeZone: "Africa/Nairobi",
       });
@@ -63,7 +63,7 @@ frappe.ui.form.on("Assist", {
       frm.save();
     }
 
-    if (frm.doc.status !== "Closed") {
+    if (frm.doc.progress_status !== "Closed") {
       // clear resolved_on if it has value
       if (frm.doc.resolved_on) {
         frm.set_value("resolved_on", "");
@@ -116,31 +116,52 @@ function toggle_necessary_fields(frm) {
 function custom_buttons(frm) {
   // check if document is submitted
   //   let submitted = frm.doc.docstatus === 1;
-  let status = frm.doc.status;
+  let status = frm.doc.progress_status;
+  let saved = frm.doc.docstatus === 1;
 
-  if (status === "Open") {
+  if (status === "Open" && saved) {
     frm.add_custom_button("In Progress", () => {
-      frm.set_value("status", "In Progress");
-      frm.save();
-    });
+        frm.set_value("progress_status", "In Progress");
+        auto_update_document(frm);
+      })
+      .addClass("btn-primary");
   }
 
   if (status === "In Progress") {
-    frm.add_custom_button(
-      "Close",
-      () => {
-        frm.set_value("status", "Closed");
-        frm.save();
-      },
-      "Set Status"
-    );
-    frm.add_custom_button(
-      "Escalate",
-      () => {
-        frm.set_value("status", "Escalated");
-        frm.save();
-      },
-      "Set Status"
-    );
+    frm.add_custom_button("Close", () => {
+        frm.set_value("progress_status", "Closed");
+        auto_update_document(frm);
+      })
+      .addClass("btn-success").removeClass("btn-default");
+    frm.add_custom_button("Escalate", () => {
+        frm.set_value("progress_status", "Escalated");
+        auto_update_document(frm);
+      })
+      .addClass("btn-warning").removeClass("btn-default");
   }
+
+  if(status === "Escalated") {
+    frm.add_custom_button("Close", () => {
+        frm.set_value("progress_status", "Closed");
+        auto_update_document(frm);
+      })
+      .addClass("btn-success").removeClass("btn-default");
+  }
+}
+
+// Function to automatically update the document
+function auto_update_document(frm) {
+  frappe.call({
+    method: "frappe.desk.form.save.savedocs",
+    args: {
+      doc: frm.doc,
+      action: "Update",
+    },
+    callback: function (response) {
+      if (!response.exc) {
+        // frappe.msgprint(__('Document has been updated automatically.'));
+        frm.reload_doc();
+      }
+    },
+  });
 }
