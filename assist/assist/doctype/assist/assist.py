@@ -6,24 +6,28 @@ from frappe.model.document import Document
 
 class Assist(Document):
 	
-    def after_insert(self):
+    def on_submit(self):
         realtime_notification(self)
     
 
 def realtime_notification(self):
-    
-    # get the user assigned to the ticket
+    # Get the user assigned to the ticket
     user = self.assigned_to
     
-    # if assigned user, trigger notification
+    # If assigned user, trigger notification
     if user:
+        # Publish real-time notification
         frappe.publish_realtime(
             event="assist_assigned",
-            message={'docname': self.name, 'subject': self.subject, 'message':f'You have been assigned to Assist: {self.name}'},
+            message={
+                'docname': self.name,
+                'subject': self.subject,
+                'message': f'You have been assigned to Assist: {self.name}'
+            },
             user=user
         )
         
-        # create notification for the bell icon
+        # Create notification for the bell icon
         notification = frappe.get_doc({
             'doctype': 'Notification Log',
             'subject': f'You have been assigned to Assist: {self.name}',
@@ -35,4 +39,4 @@ def realtime_notification(self):
         
         notification.flags.notify_via_email = False
         notification.insert(ignore_permissions=True)
-    # pass
+
