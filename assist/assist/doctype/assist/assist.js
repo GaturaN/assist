@@ -6,6 +6,13 @@ frappe.ui.form.on("Assist", {
     // Call the function to toggle necessary fields on refresh
     toggle_necessary_fields(frm);
     custom_buttons(frm);
+
+    // check if progress_status === Escalated, if yes toggle true
+    if (frm.doc.progress_status === "Escalated") {
+      frm.toggle_display("escalated_to", true);
+    } else {
+      frm.toggle_display("escalated_to", false);
+    }
   },
 
   involves_customer: function (frm) {
@@ -32,45 +39,6 @@ frappe.ui.form.on("Assist", {
     // Check if the form is new and set the 'raised_by' field to the current user
     if (frm.is_new()) {
       frm.set_value("raised_by", frappe.session.user);
-    }
-  },
-
-  progress_status: function (frm) {
-    if (frm.doc.progress_status === "In Progress") {
-      // first_responded empty?
-      if (!frm.doc.first_responded_on) {
-        let nairobiDatetime = new Date().toLocaleString("en-KE", {
-          timeZone: "Africa/Nairobi",
-        });
-
-        frm.set_value("first_responded_on", nairobiDatetime);
-        console.log("first_responded_on", nairobiDatetime + " is set");
-        frm.save();
-      }
-
-      // save the form
-      frm.save();
-    }
-
-    //  status == Closed, set closed on value
-    if (frm.doc.progress_status === "Closed") {
-      let nairobiDatetime = new Date().toLocaleString("en-KE", {
-        timeZone: "Africa/Nairobi",
-      });
-
-      frm.set_value("resolved_on", nairobiDatetime);
-      console.log("resolved_on", nairobiDatetime + " is set");
-
-      frm.save();
-    }
-
-    if (frm.doc.progress_status !== "Closed") {
-      // clear resolved_on if it has value
-      if (frm.doc.resolved_on) {
-        frm.set_value("resolved_on", "");
-      }
-
-      frm.save();
     }
   },
 });
@@ -174,11 +142,10 @@ function auto_update_document(frm) {
   });
 }
 
-
-frappe.realtime.on('assist_assigned', function(data) {
-    // Display the notification on the screen
-    frappe.show_alert({
-        message: data.message,
-        indicator: 'green' // You can change this color based on your needs
-    });
+frappe.realtime.on("assist_assigned", function (data) {
+  // Display the notification on the screen
+  frappe.show_alert({
+    message: data.message,
+    indicator: "green", // You can change this color based on your needs
+  });
 });
