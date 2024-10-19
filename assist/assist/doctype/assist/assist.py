@@ -3,11 +3,16 @@
 
 import frappe
 from frappe.model.document import Document
+from datetime import datetime
+import pytz
 
 class Assist(Document):
 	
     def on_submit(self):
         realtime_notification(self)
+        
+    def on_update_after_submit(self):
+        update_responded_by(self)
     
 
 def realtime_notification(self):
@@ -39,4 +44,23 @@ def realtime_notification(self):
         
         notification.flags.notify_via_email = False
         notification.insert(ignore_permissions=True)
+        
+        
+def update_responded_by(self):
+    # pass
+    nairobi_tz = pytz.timezone("Africa/Nairobi")
+    nairobi_datetime = datetime.now(nairobi_tz).strftime("%Y-%m-%d %H:%M:%S")
+    
+    # get current progress status and related fields
+    progress_status = self.progress_status
+    first_responded_on = self.first_responded_on
+    resolved_on = self.resolved_on
+    
+    if progress_status == "In Progress" and not first_responded_on:
+        self.first_responded_on = nairobi_datetime
+        self.save()
+    
+    elif progress_status == "Closed" and not resolved_on: #this should be able to change any time the status changes to closed
+        self.resolved_on = nairobi_datetime
+        self.save()
 
