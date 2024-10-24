@@ -13,31 +13,6 @@ frappe.ui.form.on("Assist", {
     } else {
       frm.toggle_display("escalated_to", false);
     }
-
-    if (frm.doc.countdown_end_time && frm.doc.progress_status !== "Closed") {
-      resumeCountdown(frm);
-    }
-  },
-
-  on_submit: function (frm) {
-    if (frm.doc.docstatus === 1 && frm.doc.status !== "Closed") {
-      startCountdownForPriority(frm);
-      console.log("countdown started");
-    } else {
-      // Clear the 'close_in' field if the document is not submitted or is closed
-      if (frm.fields_dict["close_in"]) {
-        frm.fields_dict["close_in"].$wrapper.html("No active countdown");
-      }
-    }
-  },
-
-  progress_status: function (frm) {
-    // Check if the progress_status has changed to "Closed"
-    if (frm.doc.progress_status === "Closed") {
-      //   clearCountdown(frm);
-      updateCloseInField(frm);
-      console.log("countdown ended");
-    }
   },
 
   involves_customer: function (frm) {
@@ -171,93 +146,6 @@ frappe.realtime.on("assist_assigned", function (data) {
   // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
-    indicator: "green",
+    indicator: "green", // You can change this color based on your needs
   });
 });
-
-// Start countdown function, saving the end time to the document
-function startCountdownForPriority(frm) {
-  let priority = frm.doc.priority;
-  let durationInMinutes;
-
-  // Set the countdown duration based on priority
-  if (priority === "High") {
-    durationInMinutes = 2 * 60; // 2 hours
-  } else if (priority === "Medium") {
-    durationInMinutes = 4 * 60; // 4 hours
-  } else if (priority === "Low") {
-    durationInMinutes = 8 * 60; // 8 hours
-  } else {
-    console.log("Invalid priority level");
-    return;
-  }
-
-  // Calculate the countdown end time
-  var countDownDate = new Date().getTime() + durationInMinutes * 60 * 1000; // Convert minutes to milliseconds
-  frm.set_value("countdown_end_time", countDownDate);
-  auto_update_document(frm);
-
-  // Start the countdown
-  resumeCountdown(frm);
-}
-
-function resumeCountdown(frm) {
-  var countDownDate = frm.doc.countdown_end_time;
-
-  if (!countDownDate) {
-    console.log("No countdown to resume.");
-    return;
-  }
-
-  // Update the countdown every 1 second
-  var x = setInterval(function () {
-    // Get current time
-    var now = new Date().getTime();
-
-    // Find the distance between now and the countdown end time
-    var distance = countDownDate - now;
-
-    // Determine whether the time is negative
-    let isNegative = distance < 0;
-    distance = Math.abs(distance); // Work with the absolute value to calculate time
-
-    // Time calculations for hours, minutes, and seconds
-    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    // If the time is late, prepend a '-' sign to indicate negative time
-    var timeDisplay = "Close In: " + (isNegative ? "-" : "") + hours + "h " + minutes + "m " + seconds + "s";
-
-    // Display the result in the HTML field 'close_in'
-    if (frm.fields_dict["close_in"]) {
-      frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
-    } else {
-      console.log("'close_in' field not found.");
-    }
-  }, 1000);
-}
-
-// Function to update the 'close_in' field when status is closed
-function updateCloseInField(frm) {
-  if (frm.doc.countdown_end_time) {
-    var now = new Date().getTime();
-    var distance = frm.doc.countdown_end_time - now;
-
-    // Calculate the absolute time difference
-    distance = Math.abs(distance);
-
-    // Time calculations for hours, minutes, and seconds
-    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    // Display the result in the HTML field 'close_in'
-    if (frm.fields_dict["close_in"]) {
-      var timeDisplay = "Closed In: " + hours + "h " + minutes + "m " + seconds + "s";
-      frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
-    } else {
-      console.log("'close_in' field not found.");
-    }
-  }
-}
