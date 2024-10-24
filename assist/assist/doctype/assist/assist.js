@@ -146,6 +146,6 @@ frappe.realtime.on("assist_assigned", function (data) {
   // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
-    indicator: "green", // You can change this color based on your needs
+    indicator: "green", 
   });
 });
