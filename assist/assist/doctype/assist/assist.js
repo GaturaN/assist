@@ -41,6 +41,57 @@ frappe.ui.form.on("Assist", {
       frm.set_value("raised_by", frappe.session.user);
     }
   },
+
+  customer: function (frm) {
+    // set query on sales order based on selected customer
+    if (frm.doc.customer) {
+      frm.set_query("sales_order", function () {
+        return {
+          filters: {
+            customer: frm.doc.customer,
+          },
+        };
+      });
+
+      // set query for sales invoice based on selected customer
+      frm.set_query("sales_invoice", function () {
+        return {
+          filters: {
+            customer: frm.doc.customer,
+          },
+        };
+      });
+    }
+  },
+
+  supplier: function (frm) {
+    // set query on purchase order based on selected supplier
+    if (frm.doc.supplier) {
+      frm.set_query("purchase_order", function () {
+        return {
+          filters: {
+            supplier: frm.doc.supplier,
+          },
+        };
+      });
+
+      frm.set_query("purchase_invoice", function () {
+        return {
+          filters: {
+            supplier: frm.doc.supplier,
+          },
+        };
+      });
+
+      frm.set_query("purchase_receipt", function () {
+        return {
+          filters: {
+            supplier: frm.doc.supplier,
+          },
+        };
+      });
+    }
+  },
 });
 
 // toggle_necessary_fields function
