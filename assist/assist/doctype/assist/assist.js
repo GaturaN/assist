@@ -7,12 +7,8 @@ frappe.ui.form.on("Assist", {
     toggle_necessary_fields(frm);
     custom_buttons(frm);
 
-    // check if progress_status === Escalated, if yes toggle true
-    if (frm.doc.progress_status === "Escalated") {
-      frm.toggle_display("escalated_to", true);
-    } else {
-      frm.toggle_display("escalated_to", false);
-    }
+    // Show "escalated_to" if the status is "Escalated" or if the field has a value
+    frm.toggle_display("escalated_to", frm.doc.progress_status === "Escalated" || frm.doc.escalated_to);
   },
 
   involves_customer: function (frm) {
@@ -195,8 +191,11 @@ function auto_update_document(frm) {
 
 frappe.realtime.on("assist_assigned", function (data) {
   // Display the notification on the screen
-  frappe.show_alert({
-    message: data.message,
-    indicator: "green", 
-  });
+  frappe.show_alert(
+    {
+      message: data.message,
+      indicator: "green",
+    },
+    20
+  );
 });
