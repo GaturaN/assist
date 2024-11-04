@@ -9,6 +9,13 @@ frappe.ui.form.on("Assist", {
 
     // Show "escalated_to" if the status is "Escalated" or if the field has a value
     frm.toggle_display("escalated_to", frm.doc.progress_status === "Escalated" || frm.doc.escalated_to);
+
+    // start or resume countdown if the document is submitted and not closed
+    if (frm.doc.docstatus === 1 && frm.doc.progress_status !== "Closed") {
+      resumeCountdown(frm);
+    } else if (frm.doc.progress_status === "Closed") {
+      displayElapsedTime(frm);
+    }
   },
 
   involves_customer: function (frm) {
@@ -35,6 +42,18 @@ frappe.ui.form.on("Assist", {
     // Check if the form is new and set the 'raised_by' field to the current user
     if (frm.is_new()) {
       frm.set_value("raised_by", frappe.session.user);
+    }
+
+    // // Initialize countdown start and end times if not set and document is new
+    // if (!frm.doc.countdown_start_time && frm.is_new()) {
+    //   startCountdown(frm);
+    // }
+  },
+
+  // start countdown on submit
+  on_submit: function (frm) {
+    if (frm.doc.progress_status !== "Closed") {
+      startCountdown(frm);
     }
   },
 
@@ -174,6 +193,10 @@ function custom_buttons(frm) {
 
 // Function to automatically update the document
 function auto_update_document(frm) {
+  if (frm.doc.progress_status === "Closed") {
+    frm.set_value("closing_duration", new Date().getTime()); // Capture the exact closing time
+  }
+
   frappe.call({
     method: "frappe.desk.form.save.savedocs",
     args: {
@@ -191,11 +214,95 @@ function auto_update_document(frm) {
 
 frappe.realtime.on("assist_assigned", function (data) {
   // Display the notification on the screen
-  frappe.show_alert(
-    {
-      message: data.message,
-      indicator: "green",
-    },
-    20
-  );
+  frappe.show_alert({
+    message: data.message,
+    indicator: "green",
+  });
 });
+
+// Start countdown function, saving the end time and start time to the document
+function startCountdown(frm) {
+  let priority = frm.doc.priority;
+  let durationInMinutes;
+
+  // Set duration based on priority
+  if (priority === "High") {
+    durationInMinutes = 120; // 2 hours
+  } else if (priority === "Medium") {
+    durationInMinutes = 240; // 4 hours
+  } else if (priority === "Low") {
+    durationInMinutes = 480; // 8 hours
+  } else {
+    console.log("Invalid priority level");
+    return;
+  }
+
+  let now = new Date().getTime();
+  let countDownDate = now + durationInMinutes * 60 * 1000;
+  frm.set_value("countdown_start_time", now);
+  frm.set_value("countdown_end_time", countDownDate);
+  //   auto_update_document(frm);
+
+  resumeCountdown(frm);
+}
+
+// Resume countdown or show "Closed In" if document is closed
+function resumeCountdown(frm) {
+  if (frm.doc.progress_status === "Closed") {
+    displayElapsedTime(frm);
+    return; // Exit without starting a countdown interval
+  }
+
+  let countDownDate = frm.doc.countdown_end_time;
+  let interval = setInterval(function () {
+    let now = new Date().getTime();
+    let distance = countDownDate - now;
+
+    if (isNaN(distance) || typeof distance === "undefined") {
+      clearInterval(interval);
+      return;
+    }
+
+    let isNegative = distance < 0;
+    distance = Math.abs(distance);
+
+    let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    let timeDisplay = isNegative ? `Overdue by: ${hours}h ${minutes}m ${seconds}s` : `Close In: ${hours}h ${minutes}m ${seconds}s`;
+
+    if (frm.fields_dict["close_in"]) {
+      frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
+    }
+
+    if (frm.doc.progress_status === "Closed") {
+      clearInterval(interval);
+      displayElapsedTime(frm);
+    }
+  }, 1000);
+}
+
+// Update displayElapsedTime to use closing_time if available
+function displayElapsedTime(frm) {
+  let startTime = frm.doc.countdown_start_time;
+  let closeTime = frm.doc.closing_duration || frm.doc.countdown_end_time; // Use closing_time if document is closed
+
+  if (!startTime) {
+    console.log("No start time available.");
+    return;
+  }
+
+  let elapsed = closeTime - startTime;
+  if (isNaN(elapsed) || elapsed < 0) return;
+
+  let hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  let minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+  let seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+
+  let timeDisplay = `Closed In: ${hours}h ${minutes}m ${seconds}s`;
+
+  if (frm.fields_dict["close_in"]) {
+    frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
+  }
+}
