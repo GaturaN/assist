@@ -60,7 +60,7 @@ def update_responded_by(self):
         self.first_responded_on = nairobi_datetime
         self.save()
     
-    elif progress_status == "Closed" and not resolved_on: #this should be able to change any time the status changes to closed
+    elif progress_status == "Closed" and not resolved_on:
         self.resolved_on = nairobi_datetime
         self.save()
 
