@@ -32,7 +32,7 @@ frappe.ui.form.on("Assist", {
     // Call the function when 'involves_item' is changed
     toggle_necessary_fields(frm);
   },
-
+  
   involves_payment: function (frm) {
     // Call the function when 'involves_payment' is changed
     toggle_necessary_fields(frm);
