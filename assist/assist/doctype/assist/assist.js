@@ -38,6 +38,28 @@ frappe.ui.form.on("Assist", {
     toggle_necessary_fields(frm);
   },
 
+  validate: function (frm) {
+    // check if is_customer is selected and customer is not set, make customer mandatory
+    if (frm.doc.involves_customer && !frm.doc.customer) {
+      frappe.throw("Please select a customer");
+    }
+
+    // check if is_supplier is selected and supplier is not set, make supplier mandatory
+    if (frm.doc.involves_supplier && !frm.doc.supplier) {
+      frappe.throw("Please select a supplier");
+    }
+
+    // check if is_item is selected and item is not set, make item mandatory
+    if (frm.doc.involves_item && !frm.doc.item) {
+      frappe.throw("Please select an item");
+    }
+
+    // check if is_payment is selected and payment is not set, make payment mandatory
+    if (frm.doc.involves_payment && !frm.doc.payment_entry) {
+      frappe.throw("Please select a payment");
+    }
+  },
+
   before_save: function (frm) {
     // Check if the form is new and set the 'raised_by' field to the current user
     if (frm.is_new()) {
