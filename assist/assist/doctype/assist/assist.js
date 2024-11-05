@@ -18,6 +18,13 @@ frappe.ui.form.on("Assist", {
     }
   },
 
+  progress_status: function (frm) {
+    if (frm.doc.progress_status === "Escalated") {
+      // make escalated_to mandatory
+      frm.set_df_property("escalated_to", "reqd", 1);
+    }
+  },
+
   involves_customer: function (frm) {
     // Call the function when 'involves_customer' is changed
     toggle_necessary_fields(frm);
@@ -32,7 +39,7 @@ frappe.ui.form.on("Assist", {
     // Call the function when 'involves_item' is changed
     toggle_necessary_fields(frm);
   },
-  
+
   involves_payment: function (frm) {
     // Call the function when 'involves_payment' is changed
     toggle_necessary_fields(frm);
@@ -77,6 +84,8 @@ frappe.ui.form.on("Assist", {
     if (frm.doc.progress_status !== "Closed") {
       startCountdown(frm);
     }
+
+    auto_update_document(frm);
   },
 
   customer: function (frm) {
@@ -171,8 +180,6 @@ function toggle_necessary_fields(frm) {
 }
 
 function custom_buttons(frm) {
-  // check if document is submitted
-  //   let submitted = frm.doc.docstatus === 1;
   let status = frm.doc.progress_status;
   let saved = frm.doc.docstatus === 1;
 
@@ -202,14 +209,21 @@ function custom_buttons(frm) {
       .removeClass("btn-default");
   }
 
+  // Check for 'Escalated' status and 'escalated_to' field
   if (status === "Escalated") {
-    frm
-      .add_custom_button("Close", () => {
-        frm.set_value("progress_status", "Closed");
-        auto_update_document(frm);
-      })
-      .addClass("btn-success")
-      .removeClass("btn-default");
+    if (frm.doc.escalated_to) {
+      // Show "Close" button if 'escalated_to' is set
+      frm
+        .add_custom_button("Close", () => {
+          frm.set_value("progress_status", "Closed");
+          auto_update_document(frm);
+        })
+        .addClass("btn-success")
+        .removeClass("btn-default");
+    } else {
+      // Ensure "Close" button is hidden if 'escalated_to' is not set
+      frm.remove_custom_button("Close");
+    }
   }
 }
 

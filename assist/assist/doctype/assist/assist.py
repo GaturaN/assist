@@ -15,7 +15,7 @@ class Assist(Document):
         update_responded_by(self)
 
      # Check if the document has been escalated and send a notification
-        if self.status == "Escalated" and self.escalated_to:
+        if self.progress_status == "Escalated" and self.escalated_to:
             realtime_notification(self, escalate=True)
 
 
