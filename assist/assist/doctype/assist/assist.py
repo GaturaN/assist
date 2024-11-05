@@ -13,21 +13,32 @@ class Assist(Document):
         
     def on_update_after_submit(self):
         update_responded_by(self)
-    
 
-def realtime_notification(self):
-    # Get the user assigned to the ticket
-    user = self.assigned_to
+     # Check if the document has been escalated and send a notification
+        if self.status == "Escalated" and self.escalated_to:
+            realtime_notification(self, escalate=True)
+
+
+def realtime_notification(self, escalate=False):
+    # Check if the notification is for escalation
+    if escalate:
+        user = self.escalated_to
+        message_subject = f'Assist: {self.name} has been escalated to you'
+        message_content = f'The Assist document {self.name} has been escalated to you.'
+    else:
+        user = self.assigned_to
+        message_subject = f'You have been assigned to Assist: {self.name}'
+        message_content = f'You have been assigned to Assist: {self.name}'
     
-    # If assigned user, trigger notification
+    # If user exists, trigger the notification
     if user:
         # Publish real-time notification
         frappe.publish_realtime(
-            event="assist_assigned",
+            event="assist_notification",
             message={
                 'docname': self.name,
                 'subject': self.subject,
-                'message': f'You have been assigned to Assist: {self.name}'
+                'message': message_content
             },
             user=user
         )
@@ -35,8 +46,8 @@ def realtime_notification(self):
         # Create notification for the bell icon
         notification = frappe.get_doc({
             'doctype': 'Notification Log',
-            'subject': f'You have been assigned to Assist: {self.name}',
-            'email_content': f'You have been assigned to Assist: {self.name}',
+            'subject': message_subject,
+            'email_content': message_content,
             'for_user': user,
             'document_type': 'Assist',
             'document_name': self.name
@@ -44,6 +55,7 @@ def realtime_notification(self):
         
         notification.flags.notify_via_email = False
         notification.insert(ignore_permissions=True)
+
         
         
 def update_responded_by(self):
