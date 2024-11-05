@@ -13,7 +13,7 @@ frappe.listview_settings["Assist"] = {
           ["Assist", "escalated_to", "=", frappe.session.user],
         ],
         "OR"
-      ); // Add as an OR condition for any one of the filters to match
+      ); 
     }
 
     // Set interval to refresh the list every 10 seconds
