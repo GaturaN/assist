@@ -16,6 +16,7 @@
   "column_break_bavp0",
   "progress_status",
   "priority",
+  "duration",
   "escalated_to",
   "close_in",
   "countdown_start_time",
@@ -286,13 +287,21 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Closing Duration"
+  },
+  {
+   "fetch_from": "priority.duration",
+   "fieldname": "duration",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Duration",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-04 10:10:11.764722",
+ "modified": "2024-11-06 12:09:16.580350",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",

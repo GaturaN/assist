@@ -10,6 +10,7 @@ class Assist(Document):
 	
     def on_submit(self):
         realtime_notification(self)
+        # self.save()
         
     def on_update_after_submit(self):
         update_responded_by(self)

@@ -248,7 +248,7 @@ function auto_update_document(frm) {
   });
 }
 
-frappe.realtime.on("assist_assigned", function (data) {
+frappe.realtime.on("assist_notification", function (data) {
   // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
@@ -259,19 +259,19 @@ frappe.realtime.on("assist_assigned", function (data) {
 // Start countdown function, saving the end time and start time to the document
 function startCountdown(frm) {
   let priority = frm.doc.priority;
-  let durationInMinutes;
+  let durationInMinutes = frm.doc.duration * 60;
 
-  // Set duration based on priority
-  if (priority === "High") {
-    durationInMinutes = 120; // 2 hours
-  } else if (priority === "Medium") {
-    durationInMinutes = 240; // 4 hours
-  } else if (priority === "Low") {
-    durationInMinutes = 480; // 8 hours
-  } else {
-    console.log("Invalid priority level");
-    return;
-  }
+  //   // Set duration based on priority
+  //   if (priority === "High") {
+  //     durationInMinutes = 120; // 2 hours
+  //   } else if (priority === "Medium") {
+  //     durationInMinutes = 240; // 4 hours
+  //   } else if (priority === "Low") {
+  //     durationInMinutes = 480; // 8 hours
+  //   } else {
+  //     console.log("Invalid priority level");
+  //     return;
+  //   }
 
   let now = new Date().getTime();
   let countDownDate = now + durationInMinutes * 60 * 1000;
