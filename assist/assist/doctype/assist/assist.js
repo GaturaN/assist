@@ -297,7 +297,7 @@ function startCountdown(frm) {
 function resumeCountdown(frm) {
   if (frm.doc.progress_status === "Closed") {
     displayElapsedTime(frm);
-    return; // Exit without starting a countdown interval
+    return;
   }
 
   let countDownDate = frm.doc.countdown_end_time;
@@ -353,3 +353,52 @@ function displayElapsedTime(frm) {
     frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
   }
 }
+
+// function resumeCountdown(frm) {
+//     if (frm.doc.progress_status === "Closed") {
+//       displayElapsedTime(frm);
+//       return; // Exit without starting a countdown interval
+//     }
+
+//     let countDownDate = new Date(frm.doc.countdown_end_time).getTime();
+//     let interval = setInterval(function () {
+//       let now = new Date();
+//       let nowTimestamp = now.getTime();
+//       let distance = countDownDate - nowTimestamp;
+
+//       if (isNaN(distance) || typeof distance === "undefined") {
+//         clearInterval(interval);
+//         return;
+//       }
+
+//       // pause on weekends (Saturday and Sunday)
+//       if (now.getDay() === 6 || now.getDay() === 0) {
+//         return;
+//       }
+
+//       // pause outside working hours
+//       if (now.getHours() < 8 || now.getHours() > 17) {
+//         return;
+//       }
+
+//       // calculate the remaining time
+//       let isNegative = distance < 0;
+//       distance = Math.abs(distance);
+
+//       let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+//       let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+//       let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+//       let timeDisplay = isNegative ? `Overdue by: ${hours}h ${minutes}m ${seconds}s` : `Close In: ${hours}h ${minutes}m ${seconds}s`;
+
+//       if (frm.fields_dict["close_in"]) {
+//         frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
+//       }
+
+//       // stop countdown if the document is closed
+//       if (frm.doc.progress_status === "Closed") {
+//         clearInterval(interval);
+//         displayElapsedTime(frm);
+//       }
+//     }, 1000);
+//   }
