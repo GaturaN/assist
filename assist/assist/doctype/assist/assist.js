@@ -182,48 +182,59 @@ function toggle_necessary_fields(frm) {
 function custom_buttons(frm) {
   let status = frm.doc.progress_status;
   let saved = frm.doc.docstatus === 1;
+  let loggedUser = frappe.session.user;
+  let assignedTo = frm.doc.assigned_to;
+  //   let raisedBy = frm.doc.raised_by;
+  let escalatedTo = frm.doc.escalated_to;
 
-  if (status === "Open" && saved) {
+  // Status: Open, only assigned user can see "In Progress" button
+  if (status === "Open" && saved && loggedUser === assignedTo) {
     frm
-      .add_custom_button("In Progress", () => {
+      .add_custom_button("In Progress", function () {
         frm.set_value("progress_status", "In Progress");
         auto_update_document(frm);
       })
       .addClass("btn-primary");
   }
 
-  if (status === "In Progress") {
+  // Status: In Progress, only assigned user can see "Close" and "Escalate" buttons
+  else if (status === "In Progress" && loggedUser === assignedTo) {
     frm
-      .add_custom_button("Close", () => {
+      .add_custom_button("Escalate", function () {
+        frm.set_value("progress_status", "Escalated");
+        auto_update_document(frm);
+      })
+      .addClass("btn-warning")
+      .removeClass("btn-default");
+    frm
+      .add_custom_button("Close", function () {
         frm.set_value("progress_status", "Closed");
         auto_update_document(frm);
       })
       .addClass("btn-success")
       .removeClass("btn-default");
+  }
+
+  // Status: Escalated, only escalated user can see "Complete" button
+  else if (status === "Escalated" && loggedUser === escalatedTo) {
     frm
-      .add_custom_button("Escalate", () => {
-        frm.set_value("progress_status", "Escalated");
+      .add_custom_button("Complete", function () {
+        frm.set_value("progress_status", "Ready to Close");
         auto_update_document(frm);
       })
       .addClass("btn-warning")
       .removeClass("btn-default");
   }
 
-  // Check for 'Escalated' status and 'escalated_to' field
-  if (status === "Escalated") {
-    if (frm.doc.escalated_to) {
-      // Show "Close" button if 'escalated_to' is set
-      frm
-        .add_custom_button("Close", () => {
-          frm.set_value("progress_status", "Closed");
-          auto_update_document(frm);
-        })
-        .addClass("btn-success")
-        .removeClass("btn-default");
-    } else {
-      // Ensure "Close" button is hidden if 'escalated_to' is not set
-      frm.remove_custom_button("Close");
-    }
+  // Status: Ready to Close, only assigned user can see "Close" button
+  else if (status === "Ready to Close" && loggedUser === assignedTo) {
+    frm
+      .add_custom_button("Close", function () {
+        frm.set_value("progress_status", "Closed");
+        auto_update_document(frm);
+      })
+      .addClass("btn-success")
+      .removeClass("btn-default");
   }
 }
 

@@ -18,6 +18,10 @@ class Assist(Document):
      # Check if the document has been escalated and send a notification
         if self.progress_status == "Escalated" and self.escalated_to:
             realtime_notification(self, escalate=True)
+            
+        # check if document is ready to close and send a notification
+        if self.progress_status == "Ready to Close":
+            ready_to_close_notification(self)
 
 
 def realtime_notification(self, escalate=False):
@@ -57,7 +61,30 @@ def realtime_notification(self, escalate=False):
         notification.flags.notify_via_email = False
         notification.insert(ignore_permissions=True)
 
+def ready_to_close_notification(self):
+    if self.progress_status == "Ready to Close":
+        frappe.publish_realtime(
+            event="ready_to_close_notification",
+            message={
+                'docname': self.name,
+                'subject': self.subject,
+                'message': f'Assist: {self.name} is ready to be closed.'
+            },
+            user=self.assigned_to
+        )
         
+        # Create notification for the bell icon
+        notification = frappe.get_doc({
+            'doctype': 'Notification Log',
+            'subject': f'Assist: {self.name} is ready to be closed.',
+            'email_content': f'Assist: {self.name} is ready to be closed.',
+            'for_user': self.assigned_to,
+            'document_type': 'Assist',
+            'document_name': self.name
+        })
+        
+        notification.flags.notify_via_email = False
+        notification.insert(ignore_permissions=True)
         
 def update_responded_by(self):
     # pass
