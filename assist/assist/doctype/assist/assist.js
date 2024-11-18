@@ -267,23 +267,27 @@ frappe.realtime.on("assist_notification", function (data) {
   });
 });
 
+// Helper function to check if the current time is within working hours and weekdays
+function isWithinWorkingHours() {
+  const now = new Date();
+  const day = now.getDay();
+  const hours = now.getHours();
+
+  // Define working hours and working days
+  const isWeekday = day >= 1 && day <= 5;
+  const isWithinHours = hours >= 8 && hours <= 17;
+
+  console.log(`isWeekday: ${isWeekday}, isWithinHours: ${isWithinHours}`);
+  console.log(`Day: ${day}, Hours: ${hours}`);
+
+  return isWeekday && isWithinHours;
+}
+
 // Start countdown function, saving the end time and start time to the document
 function startCountdown(frm) {
-  let priority = frm.doc.priority;
   let durationInMinutes = frm.doc.duration * 60;
 
-  //   // Set duration based on priority
-  //   if (priority === "High") {
-  //     durationInMinutes = 120; // 2 hours
-  //   } else if (priority === "Medium") {
-  //     durationInMinutes = 240; // 4 hours
-  //   } else if (priority === "Low") {
-  //     durationInMinutes = 480; // 8 hours
-  //   } else {
-  //     console.log("Invalid priority level");
-  //     return;
-  //   }
-
+  //   Initial setup of countdown time
   let now = new Date().getTime();
   let countDownDate = now + durationInMinutes * 60 * 1000;
   frm.set_value("countdown_start_time", now);
@@ -297,12 +301,22 @@ function startCountdown(frm) {
 function resumeCountdown(frm) {
   if (frm.doc.progress_status === "Closed") {
     displayElapsedTime(frm);
-    return; // Exit without starting a countdown interval
+    return;
   }
 
   let countDownDate = frm.doc.countdown_end_time;
   let interval = setInterval(function () {
     let now = new Date().getTime();
+
+    // Check if countdown should pause
+    if (!isWithinWorkingHours()) {
+      // if not within work hours, pause
+      clearInterval(interval);
+      setTimeout(() => resumeCountdown(frm), 5000); //retry every 5sec to see if within working hours
+      return;
+    }
+
+    // Calculate the remaining distance
     let distance = countDownDate - now;
 
     if (isNaN(distance) || typeof distance === "undefined") {
@@ -353,3 +367,17 @@ function displayElapsedTime(frm) {
     frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
   }
 }
+
+// // Helper function to get Nairobi TimeZone
+// function getNairobiTime(date = new Date()) {
+//   // Returns a Date object adjusted to Nairobi timezone
+//   const nairobiDate = new Date(
+//     new Intl.DateTimeFormat("en-US", {
+//       timeZone: "Africa/Nairobi",
+//       hour12: false,
+//     }).format(date)
+//   );
+//   return nairobiDate;
+
+//   console.log(nairobiDate);
+// }
