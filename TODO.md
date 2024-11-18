@@ -1,3 +1,3 @@
-- [ ] Account for after-work hours on Countdown.
+- [x] Account for after-work hours on Countdown.
 - [x] Let the assignee only be able to complete, but the assginer closed.
 - [x] Once assignee closes, the assigner should get notified.

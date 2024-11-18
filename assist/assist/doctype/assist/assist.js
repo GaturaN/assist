@@ -267,23 +267,27 @@ frappe.realtime.on("assist_notification", function (data) {
   });
 });
 
+// Helper function to check if the current time is within working hours and weekdays
+function isWithinWorkingHours() {
+  const now = new Date();
+  const day = now.getDay();
+  const hours = now.getHours();
+
+  // Define working hours and working days
+  const isWeekday = day >= 1 && day <= 5;
+  const isWithinHours = hours >= 8 && hours <= 17;
+
+  console.log(`isWeekday: ${isWeekday}, isWithinHours: ${isWithinHours}`);
+  console.log(`Day: ${day}, Hours: ${hours}`);
+
+  return isWeekday && isWithinHours;
+}
+
 // Start countdown function, saving the end time and start time to the document
 function startCountdown(frm) {
-  let priority = frm.doc.priority;
   let durationInMinutes = frm.doc.duration * 60;
 
-  //   // Set duration based on priority
-  //   if (priority === "High") {
-  //     durationInMinutes = 120; // 2 hours
-  //   } else if (priority === "Medium") {
-  //     durationInMinutes = 240; // 4 hours
-  //   } else if (priority === "Low") {
-  //     durationInMinutes = 480; // 8 hours
-  //   } else {
-  //     console.log("Invalid priority level");
-  //     return;
-  //   }
-
+  //   Initial setup of countdown time
   let now = new Date().getTime();
   let countDownDate = now + durationInMinutes * 60 * 1000;
   frm.set_value("countdown_start_time", now);
@@ -303,6 +307,16 @@ function resumeCountdown(frm) {
   let countDownDate = frm.doc.countdown_end_time;
   let interval = setInterval(function () {
     let now = new Date().getTime();
+
+    // Check if countdown should pause
+    if (!isWithinWorkingHours()) {
+      // if not within work hours, pause
+      clearInterval(interval);
+      setTimeout(() => resumeCountdown(frm), 5000); //retry every 5sec to see if within working hours
+      return;
+    }
+
+    // Calculate the remaining distance
     let distance = countDownDate - now;
 
     if (isNaN(distance) || typeof distance === "undefined") {
@@ -354,51 +368,16 @@ function displayElapsedTime(frm) {
   }
 }
 
-// function resumeCountdown(frm) {
-//     if (frm.doc.progress_status === "Closed") {
-//       displayElapsedTime(frm);
-//       return; // Exit without starting a countdown interval
-//     }
+// // Helper function to get Nairobi TimeZone
+// function getNairobiTime(date = new Date()) {
+//   // Returns a Date object adjusted to Nairobi timezone
+//   const nairobiDate = new Date(
+//     new Intl.DateTimeFormat("en-US", {
+//       timeZone: "Africa/Nairobi",
+//       hour12: false,
+//     }).format(date)
+//   );
+//   return nairobiDate;
 
-//     let countDownDate = new Date(frm.doc.countdown_end_time).getTime();
-//     let interval = setInterval(function () {
-//       let now = new Date();
-//       let nowTimestamp = now.getTime();
-//       let distance = countDownDate - nowTimestamp;
-
-//       if (isNaN(distance) || typeof distance === "undefined") {
-//         clearInterval(interval);
-//         return;
-//       }
-
-//       // pause on weekends (Saturday and Sunday)
-//       if (now.getDay() === 6 || now.getDay() === 0) {
-//         return;
-//       }
-
-//       // pause outside working hours
-//       if (now.getHours() < 8 || now.getHours() > 17) {
-//         return;
-//       }
-
-//       // calculate the remaining time
-//       let isNegative = distance < 0;
-//       distance = Math.abs(distance);
-
-//       let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-//       let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-//       let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-//       let timeDisplay = isNegative ? `Overdue by: ${hours}h ${minutes}m ${seconds}s` : `Close In: ${hours}h ${minutes}m ${seconds}s`;
-
-//       if (frm.fields_dict["close_in"]) {
-//         frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
-//       }
-
-//       // stop countdown if the document is closed
-//       if (frm.doc.progress_status === "Closed") {
-//         clearInterval(interval);
-//         displayElapsedTime(frm);
-//       }
-//     }, 1000);
-//   }
+//   console.log(nairobiDate);
+// }
