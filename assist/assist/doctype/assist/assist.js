@@ -184,7 +184,6 @@ function custom_buttons(frm) {
   let saved = frm.doc.docstatus === 1;
   let loggedUser = frappe.session.user;
   let assignedTo = frm.doc.assigned_to;
-  //   let raisedBy = frm.doc.raised_by;
   let escalatedTo = frm.doc.escalated_to;
 
   // Status: Open, only assigned user can see "In Progress" button
@@ -197,7 +196,7 @@ function custom_buttons(frm) {
       .addClass("btn-primary");
   }
 
-  // Status: In Progress, only assigned user can see "Close" and "Escalate" buttons
+  // Status: In Progress, only assigned user can see "Complete" and "Escalate" buttons
   else if (status === "In Progress" && loggedUser === assignedTo) {
     frm
       .add_custom_button("Escalate", function () {
@@ -206,12 +205,13 @@ function custom_buttons(frm) {
       })
       .addClass("btn-warning")
       .removeClass("btn-default");
+
     frm
-      .add_custom_button("Close", function () {
-        frm.set_value("progress_status", "Closed");
+      .add_custom_button("Complete", function () {
+        frm.set_value("progress_status", "Ready to Close");
         auto_update_document(frm);
       })
-      .addClass("btn-success")
+      .addClass("btn-success") // Changed button to "Complete" instead of "Close"
       .removeClass("btn-default");
   }
 
@@ -226,14 +226,14 @@ function custom_buttons(frm) {
       .removeClass("btn-default");
   }
 
-  // Status: Ready to Close, only assigned user can see "Close" button
+  // Status: Ready to Close, only assigned user can see "Complete" button (no "Close" button)
   else if (status === "Ready to Close" && loggedUser === assignedTo) {
     frm
-      .add_custom_button("Close", function () {
+      .add_custom_button("Complete", function () {
         frm.set_value("progress_status", "Closed");
         auto_update_document(frm);
       })
-      .addClass("btn-success")
+      .addClass("btn-success") // Changed button to "Complete" instead of "Close"
       .removeClass("btn-default");
   }
 }
