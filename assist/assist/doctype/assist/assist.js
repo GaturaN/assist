@@ -276,7 +276,7 @@ frappe.realtime.on("ready_to_close_notification", function (data) {
   // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
-    indicator: "yellow",
+    indicator: "blue",
   });
 });
 
