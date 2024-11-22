@@ -58,15 +58,15 @@ def realtime_notification(self, escalate=False):
             'document_name': self.name
         })
         
-        notification.flags.notify_via_email = False
+        # notification.flags.notify_via_email = False
         notification.insert(ignore_permissions=True)
 
 def ready_to_close_notification(self):
     user = self.raised_by
     message_subject = f'Assist: {self.name} {self.subject} is ready to be closed'
     message_content = f'Assist: {self.name} {self.subject} is ready to be closed'
-    
-    # Publish real-time notification
+
+    # Publish real-time notification to the user who raised the issue
     if self.progress_status == "Ready to Close":
         frappe.publish_realtime(
             event="ready_to_close_notification",
@@ -75,21 +75,23 @@ def ready_to_close_notification(self):
                 'subject': self.subject,
                 'message': message_content
             },
-            user=user
+            user=user  
         )
-        
-        # Create notification for the bell icon
+
+        # Create notification log for the bell icon for the same user
         notification = frappe.get_doc({
             'doctype': 'Notification Log',
-            'subject': f'Assist: {self.name} is ready to be closed.',
-            'email_content': f'Assist: {self.name} is ready to be closed.',
-            'for_user': self.assigned_to,
+            'subject': message_subject,
+            'email_content': message_content,
+            'for_user': user,  
             'document_type': 'Assist',
             'document_name': self.name
         })
-        
-        notification.flags.notify_via_email = False
+
+        # Disable email notification and save the notification
+        # notification.flags.notify_via_email = False
         notification.insert(ignore_permissions=True)
+
         
 def update_responded_by(self):
     # pass
