@@ -25,6 +25,13 @@ frappe.ui.form.on("Assist", {
     }
   },
 
+  // save document once escalated_to is set
+  escalated_to: function (frm) {
+    if (frm.doc.progress_status === "Escalated") {
+      auto_update_document(frm);
+    }
+  },
+
   involves_customer: function (frm) {
     // Call the function when 'involves_customer' is changed
     toggle_necessary_fields(frm);
