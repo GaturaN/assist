@@ -63,34 +63,46 @@ def realtime_notification(self, escalate=False):
 
 def ready_to_close_notification(self):
     user = self.raised_by
+    if not user:
+        frappe.throw('Raised by user is not set!')
+
     message_subject = f'Assist: {self.name} {self.subject} is ready to be closed'
     message_content = f'Assist: {self.name} {self.subject} is ready to be closed'
 
+    frappe.log_error(f'Progress Status: {self.progress_status}', 'Ready to Close Notification Debug')
+    frappe.log_error(f'Raised by: {user}', 'Ready to Close Notification Debug')
+
     # Publish real-time notification to the user who raised the issue
     if self.progress_status == "Ready to Close":
-        frappe.publish_realtime(
-            event="ready_to_close_notification",
-            message={
-                'docname': self.name,
-                'subject': self.subject,
-                'message': message_content
-            },
-            user=user  
-        )
+        try:
+            frappe.publish_realtime(
+                event="ready_to_close_notification",
+                message={
+                    'docname': self.name,
+                    'subject': self.subject,
+                    'message': message_content
+                },
+                user=user  # Notify the user who raised the issue
+            )
+            frappe.log_error(f'Real-time message sent to user: {user}', 'Ready to Close Notification Debug')
+        except Exception as e:
+            frappe.log_error(f'Error in publishing real-time: {str(e)}', 'Ready to Close Notification Error')
 
         # Create notification log for the bell icon for the same user
-        notification = frappe.get_doc({
-            'doctype': 'Notification Log',
-            'subject': message_subject,
-            'email_content': message_content,
-            'for_user': user,  
-            'document_type': 'Assist',
-            'document_name': self.name
-        })
+        try:
+            notification = frappe.get_doc({
+                'doctype': 'Notification Log',
+                'subject': message_subject,
+                'email_content': message_content,
+                'for_user': user,  # Notify the user who raised the issue
+                'document_type': 'Assist',
+                'document_name': self.name
+            })
+            notification.insert(ignore_permissions=True)
+            frappe.log_error(f'Notification log created for user: {user}', 'Ready to Close Notification Debug')
+        except Exception as e:
+            frappe.log_error(f'Error in creating notification log: {str(e)}', 'Ready to Close Notification Error')
 
-        # Disable email notification and save the notification
-        # notification.flags.notify_via_email = False
-        notification.insert(ignore_permissions=True)
 
         
 def update_responded_by(self):
