@@ -184,7 +184,7 @@ function custom_buttons(frm) {
   let saved = frm.doc.docstatus === 1;
   let loggedUser = frappe.session.user;
   let assignedTo = frm.doc.assigned_to;
-  let raisedBy = frm.doc.raised_by; // The person who raised the ticket
+  let raisedBy = frm.doc.raised_by;
   let escalatedTo = frm.doc.escalated_to;
 
   // Status: Open, only assigned user can see "In Progress" button
@@ -216,7 +216,7 @@ function custom_buttons(frm) {
         // Hide all other buttons for the assigned user
         frm.clear_custom_buttons();
       })
-      .addClass("btn-success") // Changed button to "Complete" instead of "Close"
+      .addClass("btn-success")
       .removeClass("btn-default");
   }
 
@@ -238,20 +238,8 @@ function custom_buttons(frm) {
         frm.set_value("progress_status", "Closed");
         auto_update_document(frm);
       })
-      .addClass("btn-success") // "Close" button for the person who raised the ticket
+      .addClass("btn-success")
       .removeClass("btn-default");
-
-    // Hide the default Cancel button for everyone except the person who raised the ticket
-    if (frm.doc.docstatus === 1 && loggedUser !== raisedBy) {
-      frm.page.set_secondary_action(
-        "Cancel",
-        function () {
-          // This is the default "Cancel" action, which we will intercept and not allow for other users.
-          frappe.msgprint("Only the person who raised the ticket can cancel this document.");
-        },
-        "btn-danger"
-      );
-    }
   }
 }
 
@@ -280,7 +268,15 @@ frappe.realtime.on("assist_notification", function (data) {
   // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
-    indicator: "green",
+    indicator: "orange",
+  });
+});
+
+frappe.realtime.on("ready_to_close_notification", function (data) {
+  // Display the notification on the screen
+  frappe.show_alert({
+    message: data.message,
+    indicator: "yellow",
   });
 });
 

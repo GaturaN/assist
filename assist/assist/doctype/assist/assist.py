@@ -28,12 +28,12 @@ def realtime_notification(self, escalate=False):
     # Check if the notification is for escalation
     if escalate:
         user = self.escalated_to
-        message_subject = f'Assist: {self.name} has been escalated to you'
-        message_content = f'The Assist document {self.name} has been escalated to you.'
+        message_subject = f'Assist: {self.name} {self.subject} has been escalated to you'
+        message_content = f'The Assist document {self.name} {self.subject} has been escalated to you.'
     else:
         user = self.assigned_to
-        message_subject = f'You have been assigned to Assist: {self.name}'
-        message_content = f'You have been assigned to Assist: {self.name}'
+        message_subject = f'You have been assigned to Assist: {self.name} {self.subject}'
+        message_content = f'You have been assigned to Assist: {self.name} {self.subject}'
     
     # If user exists, trigger the notification
     if user:
@@ -62,15 +62,20 @@ def realtime_notification(self, escalate=False):
         notification.insert(ignore_permissions=True)
 
 def ready_to_close_notification(self):
+    user = self.raised_by
+    message_subject = f'Assist: {self.name} {self.subject} is ready to be closed'
+    message_content = f'Assist: {self.name} {self.subject} is ready to be closed'
+    
+    # Publish real-time notification
     if self.progress_status == "Ready to Close":
         frappe.publish_realtime(
             event="ready_to_close_notification",
             message={
                 'docname': self.name,
                 'subject': self.subject,
-                'message': f'Assist: {self.name} is ready to be closed.'
+                'message': message_content
             },
-            user=self.assigned_to
+            user=user
         )
         
         # Create notification for the bell icon
