@@ -275,7 +275,7 @@ function isWithinWorkingHours() {
 
   // Define working hours and working days
   const isWeekday = day >= 1 && day <= 5;
-  const isWithinHours = hours >= 8 && hours <= 17;
+  const isWithinHours = hours >= 8 && hours < 17 && !(hours > 14 && hours <= 15);
 
   console.log(`isWeekday: ${isWeekday}, isWithinHours: ${isWithinHours}`);
   console.log(`Day: ${day}, Hours: ${hours}`);
@@ -297,7 +297,6 @@ function startCountdown(frm) {
   resumeCountdown(frm);
 }
 
-// Resume countdown or show "Closed In" if document is closed
 function resumeCountdown(frm) {
   if (frm.doc.progress_status === "Closed") {
     displayElapsedTime(frm);
@@ -305,15 +304,31 @@ function resumeCountdown(frm) {
   }
 
   let countDownDate = frm.doc.countdown_end_time;
+  let pausedTime = 0;
+
   let interval = setInterval(function () {
     let now = new Date().getTime();
 
     // Check if countdown should pause
     if (!isWithinWorkingHours()) {
-      // if not within work hours, pause
+      if (!frm.doc.pause_start_time) {
+        // Log the time when pause starts
+        frm.set_value("pause_start_time", now);
+        auto_update_document(frm);
+      }
+
       clearInterval(interval);
-      setTimeout(() => resumeCountdown(frm), 5000); //retry every 5sec to see if within working hours
+      setTimeout(() => resumeCountdown(frm), 5000); // Retry every 5 seconds
       return;
+    }
+
+    // If we are resuming, calculate the paused duration
+    if (frm.doc.pause_start_time) {
+      pausedTime = now - frm.doc.pause_start_time;
+      frm.set_value("pause_start_time", null); // Clear pause start time
+      frm.set_value("countdown_end_time", countDownDate + pausedTime); // Adjust end time
+      countDownDate += pausedTime; // Update countdown end time with the paused time
+      auto_update_document(frm); // Save the updated countdown_end_time
     }
 
     // Calculate the remaining distance
