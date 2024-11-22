@@ -184,6 +184,7 @@ function custom_buttons(frm) {
   let saved = frm.doc.docstatus === 1;
   let loggedUser = frappe.session.user;
   let assignedTo = frm.doc.assigned_to;
+  let raisedBy = frm.doc.raised_by; // The person who raised the ticket
   let escalatedTo = frm.doc.escalated_to;
 
   // Status: Open, only assigned user can see "In Progress" button
@@ -208,8 +209,12 @@ function custom_buttons(frm) {
 
     frm
       .add_custom_button("Complete", function () {
+        // Change status to Ready to Close
         frm.set_value("progress_status", "Ready to Close");
         auto_update_document(frm);
+
+        // Hide all other buttons for the assigned user
+        frm.clear_custom_buttons();
       })
       .addClass("btn-success") // Changed button to "Complete" instead of "Close"
       .removeClass("btn-default");
@@ -226,15 +231,27 @@ function custom_buttons(frm) {
       .removeClass("btn-default");
   }
 
-  // Status: Ready to Close, only assigned user can see "Complete" button (no "Close" button)
-  else if (status === "Ready to Close" && loggedUser === assignedTo) {
+  // Status: Ready to Close, only raisedBy user can see "Close" button
+  else if (status === "Ready to Close" && loggedUser === raisedBy) {
     frm
-      .add_custom_button("Complete", function () {
+      .add_custom_button("Close", function () {
         frm.set_value("progress_status", "Closed");
         auto_update_document(frm);
       })
-      .addClass("btn-success") // Changed button to "Complete" instead of "Close"
+      .addClass("btn-success") // "Close" button for the person who raised the ticket
       .removeClass("btn-default");
+
+    // Hide the default Cancel button for everyone except the person who raised the ticket
+    if (frm.doc.docstatus === 1 && loggedUser !== raisedBy) {
+      frm.page.set_secondary_action(
+        "Cancel",
+        function () {
+          // This is the default "Cancel" action, which we will intercept and not allow for other users.
+          frappe.msgprint("Only the person who raised the ticket can cancel this document.");
+        },
+        "btn-danger"
+      );
+    }
   }
 }
 
