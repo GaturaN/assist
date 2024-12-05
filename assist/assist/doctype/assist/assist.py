@@ -73,8 +73,8 @@ def ready_to_close_notification(self):
     Sends a notification when the document is ready to be closed.
     It alerts the user who raised the issue and logs the notification.
     """
-    user = self.raised_by  # Ensure the notification goes to the raised_by user
-    if not user:
+    original_requester = self.raised_by  # More descriptive variable name
+    if not original_requester:
         frappe.throw('Raised by user is not set!')
 
     # Construct a URL to the assist document
@@ -85,7 +85,7 @@ def ready_to_close_notification(self):
     message_content = f'<a href="{document_url}">Assist: {self.name} {self.subject}</a> is ready to be closed'
 
     frappe.log_error(f'Progress Status: {self.progress_status}', 'Ready to Close Notification Debug')
-    frappe.log_error(f'Raised by: {user}', 'Ready to Close Notification Debug')
+    frappe.log_error(f'Raised by: {original_requester}', 'Ready to Close Notification Debug')
 
     # Publish real-time notification to the user who raised the issue
     if self.progress_status == "Ready to Close":
@@ -97,9 +97,9 @@ def ready_to_close_notification(self):
                     'subject': self.subject,
                     'message': message_content
                 },
-                user=user  # Notify the user who raised the issue
+                user=original_requester  # Using the descriptive variable name
             )
-            frappe.log_error(f'Real-time message sent to user: {user}', 'Ready to Close Notification Debug')
+            frappe.log_error(f'Real-time message sent to user: {original_requester}', 'Ready to Close Notification Debug')
         except Exception as e:
             frappe.log_error(f'Error in publishing real-time: {str(e)}', 'Ready to Close Notification Error')
 
@@ -109,12 +109,12 @@ def ready_to_close_notification(self):
                 'doctype': 'Notification Log',
                 'subject': message_subject,
                 'email_content': message_content,
-                'for_user': user,  # Notify the user who raised the issue
+                'for_user': original_requester,  # Using the descriptive variable name
                 'document_type': 'Assist',
                 'document_name': self.name
             })
             notification.insert(ignore_permissions=True)
-            frappe.log_error(f'Notification log created for user: {user}', 'Ready to Close Notification Debug')
+            frappe.log_error(f'Notification log created for user: {original_requester}', 'Ready to Close Notification Debug')
         except Exception as e:
             frappe.log_error(f'Error in creating notification log: {str(e)}', 'Ready to Close Notification Error')
 
