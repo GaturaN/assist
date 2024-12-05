@@ -7,8 +7,8 @@ frappe.ui.form.on("Assist", {
     toggle_necessary_fields(frm);
     custom_buttons(frm);
 
-    // Show "escalated_to" if the status is not "Open" or if the field has a value
-    frm.toggle_display("escalated_to", frm.doc.progress_status !== "Open" || frm.doc.escalated_to);
+    // Show "escalated_to" if the status is not "Open" or if the field has a value, but hide if closed and empty
+    frm.toggle_display("escalated_to", (frm.doc.progress_status !== "Open" || frm.doc.escalated_to) && !(frm.doc.progress_status === "Closed" && !frm.doc.escalated_to));
 
     // Show "solution_description" if it has been set or if progress_status is not "Open"
     frm.toggle_display("solution_description", frm.doc.solution_description || frm.doc.progress_status !== "Open");
