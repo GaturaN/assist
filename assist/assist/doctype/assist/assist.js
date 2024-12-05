@@ -7,8 +7,14 @@ frappe.ui.form.on("Assist", {
     toggle_necessary_fields(frm);
     custom_buttons(frm);
 
-    // Show "escalated_to" if the status is "Escalated" or if the field has a value
-    frm.toggle_display("escalated_to", frm.doc.progress_status === "Escalated" || frm.doc.escalated_to);
+    // Show "escalated_to" if the status is not "Open" or if the field has a value
+    frm.toggle_display("escalated_to", frm.doc.progress_status !== "Open" || frm.doc.escalated_to);
+
+    // Show "solution_description" if it has been set or if progress_status is not "Open"
+    frm.toggle_display("solution_description", frm.doc.solution_description || frm.doc.progress_status !== "Open");
+
+    // Make solution_description read-only if ticket is closed
+    frm.set_df_property("solution_description", "read_only", frm.doc.progress_status === "Closed");
 
     // start or resume countdown if the document is submitted and not closed
     if (frm.doc.docstatus === 1 && frm.doc.progress_status !== "Closed") {
@@ -19,16 +25,31 @@ frappe.ui.form.on("Assist", {
   },
 
   progress_status: function (frm) {
+    // Prevent changing progress_status to "Escalated" unless "escalated_to" is set
+    if (frm.doc.progress_status === "Escalated" && !frm.doc.escalated_to) {
+      frappe.throw("Please set 'Escalated To' before changing status to 'Escalated'.");
+      //   frappe.validated = false;
+    }
+
     if (frm.doc.progress_status === "Escalated") {
       // make escalated_to mandatory
       frm.set_df_property("escalated_to", "reqd", 1);
-    }
-  },
 
-  // save document once escalated_to is set
-  escalated_to: function (frm) {
-    if (frm.doc.progress_status === "Escalated") {
-      auto_update_document(frm);
+      // Prevent saving until escalated_to is set
+      if (!frm.doc.escalated_to) {
+        frappe.msgprint("Please set 'Escalated To' before saving.");
+        frappe.validated = false;
+      }
+    }
+
+    // Make escalated_to read-only if status is Closed
+    frm.set_df_property("escalated_to", "read_only", frm.doc.progress_status === "Closed");
+
+    // Make "solution_description" mandatory if status is "Ready to Close" and it's not set
+    if (frm.doc.progress_status === "Ready to Close" && !frm.doc.solution_description) {
+      frm.set_df_property("solution_description", "reqd", 1);
+      frappe.msgprint("Please provide a solution description before being ready to close.");
+      frappe.validated = false;
     }
   },
 
@@ -53,6 +74,21 @@ frappe.ui.form.on("Assist", {
   },
 
   validate: function (frm) {
+    // Validate minimum word count for description
+    if (countWords(frm.doc.description) < 10) {
+      frappe.throw("Description must contain at least 10 words");
+    }
+
+    // Validate solution_description is set and has minimum word count when completing or ready to close
+    if (frm.doc.progress_status === "Ready to Close" || frm.doc.__action === "Complete") {
+      if (!frm.doc.solution_description || frm.doc.solution_description.trim() === "") {
+        frappe.throw("Solution description is required before completing the ticket");
+      }
+      if (countWords(frm.doc.solution_description) < 10) {
+        frappe.throw("Solution description must contain at least 10 words");
+      }
+    }
+
     // check if is_customer is selected and customer is not set, make customer mandatory
     if (frm.doc.involves_customer && !frm.doc.customer) {
       frappe.throw("Please select a customer");
@@ -145,6 +181,20 @@ frappe.ui.form.on("Assist", {
       });
     }
   },
+
+  escalated_to: function (frm) {
+    // Check if user is trying to escalate to themselves
+    if (frm.doc.escalated_to === frm.doc.assigned_to) {
+      frm.set_value("escalated_to", "");
+      frappe.throw(__("You cannot escalate a ticket to yourself. Please select a different user."));
+      return;
+    }
+
+    // Auto-save when escalated_to is set
+    if (frm.doc.escalated_to && frm.doc.progress_status === "Escalated") {
+      frm.save();
+    }
+  },
 });
 
 // toggle_necessary_fields function
@@ -208,6 +258,11 @@ function custom_buttons(frm) {
   else if (status === "In Progress" && loggedUser === assignedTo) {
     frm
       .add_custom_button("Escalate", function () {
+        // First check if escalated_to is set
+        if (!frm.doc.escalated_to) {
+          frappe.throw("Please set 'Escalated To' before escalating the ticket");
+          return;
+        }
         frm.set_value("progress_status", "Escalated");
         auto_update_document(frm);
       })
@@ -216,6 +271,16 @@ function custom_buttons(frm) {
 
     frm
       .add_custom_button("Complete", function () {
+        // Check if solution description exists and is detailed enough
+        if (!frm.doc.solution_description || frm.doc.solution_description.trim() === "") {
+          frappe.throw("Please provide a solution description before completing");
+          return;
+        }
+        if (countWords(frm.doc.solution_description) < 10) {
+          frappe.throw("Please provide a detailed solution description with at least 10 words before completing");
+          return;
+        }
+
         // Change status to Ready to Close
         frm.set_value("progress_status", "Ready to Close");
         auto_update_document(frm);
@@ -231,6 +296,16 @@ function custom_buttons(frm) {
   else if (status === "Escalated" && loggedUser === escalatedTo) {
     frm
       .add_custom_button("Complete", function () {
+        // Check if solution description exists and is detailed enough
+        if (!frm.doc.solution_description || frm.doc.solution_description.trim() === "") {
+          frappe.throw("Please provide a solution description before completing");
+          return;
+        }
+        if (countWords(frm.doc.solution_description) < 10) {
+          frappe.throw("Please provide a detailed solution description with at least 10 words before completing");
+          return;
+        }
+
         frm.set_value("progress_status", "Ready to Close");
         auto_update_document(frm);
       })
@@ -292,28 +367,64 @@ function isWithinWorkingHours() {
   const now = new Date();
   const day = now.getDay();
   const hours = now.getHours();
+  const minutes = now.getMinutes();   
+  const currentTime = hours + minutes / 60;
 
-  // Define working hours and working days
+  // Define working hours (8:00 AM to 5:00 PM, excluding 1:00 PM to 2:00 PM) and working days (Monday to Friday)
   const isWeekday = day >= 1 && day <= 5;
-  const isWithinHours = hours >= 8 && hours <= 17;
-
-  console.log(`isWeekday: ${isWeekday}, isWithinHours: ${isWithinHours}`);
-  console.log(`Day: ${day}, Hours: ${hours}`);
+  const isBeforeLunch = currentTime >= 8 && currentTime < 13;
+  const isAfterLunch = currentTime >= 14 && currentTime < 17;
+  const isWithinHours = isBeforeLunch || isAfterLunch;
 
   return isWeekday && isWithinHours;
+}
+
+// Calculate the next working hour timestamp
+function getNextWorkingTime() {
+  const now = new Date();
+  const day = now.getDay();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const currentTime = hours + minutes / 60;
+  
+  // If it's after work hours
+  if (hours >= 17) {
+    now.setHours(8, 0, 0, 0); // Set to next day 8 AM
+    now.setDate(now.getDate() + 1);
+  } 
+  // If it's lunch hour
+  else if (currentTime >= 13 && currentTime < 14) {
+    now.setHours(14, 0, 0, 0); // Set to 2 PM today
+  }
+  // If it's before work hours
+  else if (hours < 8) {
+    now.setHours(8, 0, 0, 0); // Set to today 8 AM
+  }
+  
+  // If it's weekend
+  if (day === 0) { // Sunday
+    now.setDate(now.getDate() + 1); // Move to Monday
+  } else if (day === 6) { // Saturday
+    now.setDate(now.getDate() + 2); // Move to Monday
+  }
+  
+  return now.getTime();
 }
 
 // Start countdown function, saving the end time and start time to the document
 function startCountdown(frm) {
   let durationInMinutes = frm.doc.duration * 60;
-
-  //   Initial setup of countdown time
   let now = new Date().getTime();
-  let countDownDate = now + durationInMinutes * 60 * 1000;
+  
+  // Store the total duration in milliseconds
+  frm.doc.total_duration_ms = durationInMinutes * 60 * 1000;
+  frm.doc.remaining_duration_ms = frm.doc.total_duration_ms;
+  
+  // Set initial countdown times
   frm.set_value("countdown_start_time", now);
-  frm.set_value("countdown_end_time", countDownDate);
-  //   auto_update_document(frm);
-
+  frm.set_value("countdown_end_time", now + frm.doc.total_duration_ms);
+  frm.set_value("last_pause_time", null);
+  
   resumeCountdown(frm);
 }
 
@@ -324,20 +435,41 @@ function resumeCountdown(frm) {
     return;
   }
 
-  let countDownDate = frm.doc.countdown_end_time;
   let interval = setInterval(function () {
     let now = new Date().getTime();
 
     // Check if countdown should pause
     if (!isWithinWorkingHours()) {
-      // if not within work hours, pause
-      clearInterval(interval);
-      setTimeout(() => resumeCountdown(frm), 5000); //retry every 5sec to see if within working hours
+      if (!frm.doc.last_pause_time) {
+        frm.doc.last_pause_time = now;
+        frm.doc.remaining_duration_ms = frm.doc.countdown_end_time - now;
+        
+        // Save the document to persist the pause state
+        frm.save().then(() => {
+          clearInterval(interval);
+          // Check again in 5 minutes
+          setTimeout(() => resumeCountdown(frm), 300000);
+        });
+      } else {
+        clearInterval(interval);
+        // Check again in 5 minutes
+        setTimeout(() => resumeCountdown(frm), 300000);
+      }
       return;
     }
 
+    // If we're resuming from a pause, adjust the end time
+    if (frm.doc.last_pause_time) {
+      let nextWorkingTime = getNextWorkingTime();
+      let newEndTime = nextWorkingTime + frm.doc.remaining_duration_ms;
+      
+      frm.set_value("countdown_end_time", newEndTime);
+      frm.set_value("last_pause_time", null);
+      frm.save();
+    }
+
     // Calculate the remaining distance
-    let distance = countDownDate - now;
+    let distance = frm.doc.countdown_end_time - now;
 
     if (isNaN(distance) || typeof distance === "undefined") {
       clearInterval(interval);
@@ -388,16 +520,8 @@ function displayElapsedTime(frm) {
   }
 }
 
-// // Helper function to get Nairobi TimeZone
-// function getNairobiTime(date = new Date()) {
-//   // Returns a Date object adjusted to Nairobi timezone
-//   const nairobiDate = new Date(
-//     new Intl.DateTimeFormat("en-US", {
-//       timeZone: "Africa/Nairobi",
-//       hour12: false,
-//     }).format(date)
-//   );
-//   return nairobiDate;
-
-//   console.log(nairobiDate);
-// }
+// Function to count words in a string
+function countWords(str) {
+  if (!str) return 0;
+  return str.trim().split(/\s+/).length;
+}

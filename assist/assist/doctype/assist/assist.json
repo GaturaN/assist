@@ -22,6 +22,10 @@
   "countdown_start_time",
   "countdown_end_time",
   "closing_duration",
+  "elapsed_working_time",
+  "total_duration_ms",
+  "last_pause_time",
+  "remaining_time",
   "linked_documents_section",
   "involves_customer",
   "customer",
@@ -40,6 +44,7 @@
   "payment_entry",
   "details_section_section",
   "description",
+  "solution_description",
   "issue_attachment",
   "section_break_k93ec",
   "first_responded_on",
@@ -176,6 +181,7 @@
   },
   {
    "allow_in_quick_entry": 1,
+   "description": "Elaborate on the problem faced to raise an assist.",
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "label": "Description",
@@ -303,13 +309,48 @@
    "fieldtype": "Data",
    "label": "Pause Start Time",
    "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Briefly describe the steps taken to solve the ticket.",
+   "fieldname": "solution_description",
+   "fieldtype": "Text Editor",
+   "label": "Solution Description"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "elapsed_working_time",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Elapsed Working Time"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_duration_ms",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Total Duration Ms"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "last_pause_time",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Last Pause Time"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "remaining_time",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Remaining Time"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-18 14:11:05.477389",
+ "modified": "2024-12-05 15:27:37.148957",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
