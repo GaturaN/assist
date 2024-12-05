@@ -25,15 +25,22 @@ class Assist(Document):
 
 
 def realtime_notification(self, escalate=False):
+    """
+    Sends a real-time notification to the user. If the notification is for escalation,
+    it alerts the user specified in 'escalated_to'. Otherwise, it alerts the user in 'assigned_to'.
+    
+    Parameters:
+    - escalate (bool): Indicates if the notification is for an escalation.
+    """
     # Check if the notification is for escalation
     if escalate:
         user = self.escalated_to
         message_subject = f'Assist: {self.name} {self.subject} has been escalated to you'
-        message_content = f'The Assist document {self.name} {self.subject} has been escalated to you.'
+        message_content = f'The Assist document <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">{self.name} {self.subject}</a> has been escalated to you.'
     else:
         user = self.assigned_to
         message_subject = f'You have been assigned to Assist: {self.name} {self.subject}'
-        message_content = f'You have been assigned to Assist: {self.name} {self.subject}'
+        message_content = f'You have been assigned to Assist: <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">{self.name} {self.subject}</a>'
     
     # If user exists, trigger the notification
     if user:
@@ -62,12 +69,20 @@ def realtime_notification(self, escalate=False):
         notification.insert(ignore_permissions=True)
 
 def ready_to_close_notification(self):
-    user = self.raised_by
+    """
+    Sends a notification when the document is ready to be closed.
+    It alerts the user who raised the issue and logs the notification.
+    """
+    user = self.raised_by  # Ensure the notification goes to the raised_by user
     if not user:
         frappe.throw('Raised by user is not set!')
 
+    # Construct a URL to the assist document
+    document_url = frappe.utils.get_url_to_form('Assist', self.name)
+
     message_subject = f'Assist: {self.name} {self.subject} is ready to be closed'
-    message_content = f'Assist: {self.name} {self.subject} is ready to be closed'
+    # Make the assist name clickable by embedding it in a hyperlink
+    message_content = f'<a href="{document_url}">Assist: {self.name} {self.subject}</a> is ready to be closed'
 
     frappe.log_error(f'Progress Status: {self.progress_status}', 'Ready to Close Notification Debug')
     frappe.log_error(f'Raised by: {user}', 'Ready to Close Notification Debug')
@@ -122,4 +137,3 @@ def update_responded_by(self):
     elif progress_status == "Closed" and not resolved_on:
         self.resolved_on = nairobi_datetime
         self.save()
-
