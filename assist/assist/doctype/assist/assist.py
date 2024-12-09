@@ -7,6 +7,17 @@ from datetime import datetime
 import pytz
 
 class Assist(Document):
+    """
+    Model for Assist documents.
+    
+    The methods on this class are hooks that are called by Frappe at different stages of the document's lifecycle.
+    
+    The on_submit method is called when the document is submitted. It sends a real-time notification to the assigned user.
+    
+    The on_update_after_submit method is called after the document is updated. It updates the first_responded_on and resolved_on fields.
+    
+    The on_update_after_submit method also checks if the document has been escalated and sends a notification. If the document is ready to be closed, it sends a notification to the user who raised the document.
+    """
 	
     def on_submit(self):
         realtime_notification(self)
@@ -24,104 +35,118 @@ class Assist(Document):
             ready_to_close_notification(self)
 
 
-def realtime_notification(self, escalate=False):
+def realtime_notification(self):
     """
-    Sends a real-time notification to the user. If the notification is for escalation,
-    it alerts the user specified in 'escalated_to'. Otherwise, it alerts the user in 'assigned_to'.
+    Sends a real-time notification based on the document's progress status.
+    - If progress_status == "Escalated", the notification is sent to the user in 'escalated_to'.
+    - For all other statuses, the notification is sent to the user in 'assigned_to'.
     
-    Parameters:
-    - escalate (bool): Indicates if the notification is for an escalation.
+    Only sends notification if progress_status is not "Ready to Close".
     """
-    # Check if the notification is for escalation
-    if escalate:
+
+    # Ensure progress_status is not "Ready to Close"
+    if self.progress_status == "Ready to Close":
+        return  
+
+    # Determine notification type based on progress_status
+    if self.progress_status == "Escalated":
         user = self.escalated_to
         message_subject = f'Assist: {self.name} {self.subject} has been escalated to you'
-        message_content = f'The Assist document <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">{self.name} {self.subject}</a> has been escalated to you.'
+        message_content = (
+            f'The Assist document <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">'
+            f'{self.name} {self.subject}</a> has been escalated to you.'
+        )
     else:
         user = self.assigned_to
         message_subject = f'You have been assigned to Assist: {self.name} {self.subject}'
-        message_content = f'You have been assigned to Assist: <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">{self.name} {self.subject}</a>'
-    
-    # If user exists, trigger the notification
-    if user:
-        # Publish real-time notification
-        frappe.publish_realtime(
-            event="assist_notification",
-            message={
-                'docname': self.name,
-                'subject': self.subject,
-                'message': message_content
-            },
-            user=user
+        message_content = (
+            f'You have been assigned to Assist: <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">'
+            f'{self.name} {self.subject}</a>'
         )
-        
-        # Create notification for the bell icon
-        notification = frappe.get_doc({
-            'doctype': 'Notification Log',
-            'subject': message_subject,
-            'email_content': message_content,
-            'for_user': user,
-            'document_type': 'Assist',
-            'document_name': self.name
-        })
-        
-        # notification.flags.notify_via_email = False
-        notification.insert(ignore_permissions=True)
+
+    # Ensure the recipient user is set
+    if not user:
+        frappe.throw("Notification user is not set!")
+
+    # Publish real-time notification
+    frappe.publish_realtime(
+        event="assist_notification",
+        message={
+            'docname': self.name,
+            'subject': self.subject,
+            'message': message_content
+        },
+        user=user
+    )
+
+    # Create a notification log for the user
+    notification = frappe.get_doc({
+        'doctype': 'Notification Log',
+        'subject': message_subject,
+        'email_content': message_content,
+        'for_user': user,
+        'document_type': 'Assist',
+        'document_name': self.name
+    })
+    notification.insert(ignore_permissions=True)
+
 
 def ready_to_close_notification(self):
     """
-    Sends a notification when the document is ready to be closed.
-    It alerts the user who raised the issue and logs the notification.
+    Sends a notification to the user who raised the document when the progress status is "Ready to Close".
+    This notification alerts the user that the document is ready to be closed.
+    
+    Only sends notification if progress_status == "Ready to Close".
     """
-    original_requester = self.raised_by  # More descriptive variable name
-    if not original_requester:
+
+    # Ensure the document is in "Ready to Close" status
+    if self.progress_status != "Ready to Close":
+        return  # No notification if status is not "Ready to Close"
+
+    # Ensure the raised_by user is set
+    if not self.raised_by:
         frappe.throw('Raised by user is not set!')
 
-    # Construct a URL to the assist document
+    user = self.raised_by  
     document_url = frappe.utils.get_url_to_form('Assist', self.name)
 
     message_subject = f'Assist: {self.name} {self.subject} is ready to be closed'
-    # Make the assist name clickable by embedding it in a hyperlink
-    message_content = f'<a href="{document_url}">Assist: {self.name} {self.subject}</a> is ready to be closed'
+    message_content = (
+        f'<a href="{document_url}">Assist: {self.name} {self.subject}</a> is ready to be closed'
+    )
 
-    frappe.log_error(f'Progress Status: {self.progress_status}', 'Ready to Close Notification Debug')
-    frappe.log_error(f'Raised by: {original_requester}', 'Ready to Close Notification Debug')
+    # Publish real-time notification
+    frappe.publish_realtime(
+        event="ready_to_close_notification",
+        message={
+            'docname': self.name,
+            'subject': self.subject,
+            'message': message_content
+        },
+        user=user
+    )
 
-    # Publish real-time notification to the user who raised the issue
-    if self.progress_status == "Ready to Close":
-        try:
-            frappe.publish_realtime(
-                event="ready_to_close_notification",
-                message={
-                    'docname': self.name,
-                    'subject': self.subject,
-                    'message': message_content
-                },
-                user=original_requester  # Using the descriptive variable name
-            )
-            frappe.log_error(f'Real-time message sent to user: {original_requester}', 'Ready to Close Notification Debug')
-        except Exception as e:
-            frappe.log_error(f'Error in publishing real-time: {str(e)}', 'Ready to Close Notification Error')
-
-        # Create notification log for the bell icon for the same user
-        try:
-            notification = frappe.get_doc({
-                'doctype': 'Notification Log',
-                'subject': message_subject,
-                'email_content': message_content,
-                'for_user': original_requester,  # Using the descriptive variable name
-                'document_type': 'Assist',
-                'document_name': self.name
-            })
-            notification.insert(ignore_permissions=True)
-            frappe.log_error(f'Notification log created for user: {original_requester}', 'Ready to Close Notification Debug')
-        except Exception as e:
-            frappe.log_error(f'Error in creating notification log: {str(e)}', 'Ready to Close Notification Error')
+    # Create a notification log for the user
+    notification = frappe.get_doc({
+        'doctype': 'Notification Log',
+        'subject': message_subject,
+        'email_content': message_content,
+        'for_user': user,
+        'document_type': 'Assist',
+        'document_name': self.name
+    })
+    notification.insert(ignore_permissions=True)
 
 
         
 def update_responded_by(self):
-    # pass
+    """
+    Updates the first_responded_on and resolved_on fields based on the progress status.
+    
+    If the progress status is "In Progress" and first_responded_on is empty, sets first_responded_on to the current datetime in the Africa/Nairobi timezone.
+    
+    If the progress status is "Closed" and resolved_on is empty, sets resolved_on to the current datetime in the Africa/Nairobi timezone.
+    """
     nairobi_tz = pytz.timezone("Africa/Nairobi")
     nairobi_datetime = datetime.now(nairobi_tz).strftime("%Y-%m-%d %H:%M:%S")
     
