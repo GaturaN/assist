@@ -2,20 +2,25 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Assist", {
-    /**
-     * Refreshes the form by toggling necessary fields and custom buttons.
-     * Displays or hides the "escalated_to" and "solution_description" fields based on the progress status.
-     * Sets the "solution_description" field to read-only if the ticket is closed.
-     * Starts or resumes the countdown if the document is submitted and not closed.
-     * Displays elapsed time if the progress status is "Closed".
-     */
+  /**
+   * Refreshes the form by toggling necessary fields and custom buttons.
+   * Displays or hides the "escalated_to" and "solution_description" fields based on the progress status.
+   * Sets the "solution_description" field to read-only if the ticket is closed.
+   * Starts or resumes the countdown if the document is submitted and not closed.
+   * Displays elapsed time if the progress status is "Closed".
+   */
   refresh: function (frm) {
     // Call the function to toggle necessary fields on refresh
     toggle_necessary_fields(frm);
     custom_buttons(frm);
 
     // Show "escalated_to" if the status is not "Open" or if the field has a value, but hide if closed and empty
-    frm.toggle_display("escalated_to", (frm.doc.progress_status !== "Open" || frm.doc.escalated_to) && !(frm.doc.progress_status === "Closed" && !frm.doc.escalated_to));
+    frm.toggle_display(
+      "escalated_to",
+      (frm.doc.progress_status !== "Open" || frm.doc.escalated_to) &&
+        !(frm.doc.progress_status === "Closed" && !frm.doc.escalated_to) &&
+        !(frm.doc.progress_status === "Ready to Close" && !frm.doc.escalated_to)
+    );
 
     // Show "solution_description" if it has been set or if progress_status is not "Open"
     frm.toggle_display("solution_description", frm.doc.solution_description || frm.doc.progress_status !== "Open");
@@ -267,15 +272,29 @@ frappe.ui.form.on("Assist", {
       frm.save();
     }
   },
+
+  /**
+   * Triggered when the 'assigned_to' field is changed.
+   * Prevents assigning a ticket to the same user that is currently assigned to.
+   * @param {object} frm - The Assist form object.
+   */
+  assigned_to: function (frm) {
+    // Check if user is trying to assigne to themselves
+    if (frm.doc.assigned_to === frappe.session.user) {
+      frm.set_value("assigned_to", "");
+      frappe.throw(__("You cannot assign a ticket to yourself. Please select a different user."));
+      return;
+    }
+  },
 });
 
 // toggle_necessary_fields function
-  /**
-   * Toggle display of necessary fields based on the values of 'involves_customer', 'involves_supplier',
-   * 'involves_item' and 'involves_payment' fields.
-   *
-   * @param {object} frm - The Assist form object.
-   */
+/**
+ * Toggle display of necessary fields based on the values of 'involves_customer', 'involves_supplier',
+ * 'involves_item' and 'involves_payment' fields.
+ *
+ * @param {object} frm - The Assist form object.
+ */
 function toggle_necessary_fields(frm) {
   // Set field values from the form
   let involves_customer = frm.doc.involves_customer;
@@ -316,7 +335,7 @@ function toggle_necessary_fields(frm) {
 
 /**
  * Adds custom buttons to the form based on the progress status and user roles.
- * 
+ *
  * - "In Progress" button is shown to the assigned user when the status is "Open".
  * - "Escalate" and "Complete" buttons are shown to the assigned user when the status is "In Progress".
  * - "Complete" button is shown to the escalated user when the status is "Escalated".
@@ -415,7 +434,7 @@ function custom_buttons(frm) {
 
 /**
  * Automatically updates the Assist document when the status is changed.
- * 
+ *
  * @param {object} frm - The Assist form object.
  */
 function auto_update_document(frm) {
@@ -438,11 +457,11 @@ function auto_update_document(frm) {
   });
 }
 
-  /**
-   * Called when a notification is sent to the user
-   * @param {object} data - The notification data
-   * @param {string} data.message - The message to display
-   */
+/**
+ * Called when a notification is sent to the user
+ * @param {object} data - The notification data
+ * @param {string} data.message - The message to display
+ */
 frappe.realtime.on("assist_notification", function (data) {
   // Display the notification on the screen
   frappe.show_alert({
@@ -471,7 +490,7 @@ function isWithinWorkingHours() {
   const now = new Date();
   const day = now.getDay();
   const hours = now.getHours();
-  const minutes = now.getMinutes();   
+  const minutes = now.getMinutes();
   const currentTime = hours + minutes / 60;
 
   // Define working hours (8:00 AM to 5:00 PM, excluding 1:00 PM to 2:00 PM) and working days (Monday to Friday)
@@ -483,26 +502,26 @@ function isWithinWorkingHours() {
   return isWeekday && isWithinHours;
 }
 
-  /**
-   * Returns the timestamp of the next working hour.
-   *
-   * Working hours are defined as 8:00 AM to 5:00 PM, excluding lunch break from 1:00 PM to 2:00 PM.
-   * Only Monday to Friday are considered as working days.
-   *
-   * @returns {number} Timestamp of the next working hour
-   */
+/**
+ * Returns the timestamp of the next working hour.
+ *
+ * Working hours are defined as 8:00 AM to 5:00 PM, excluding lunch break from 1:00 PM to 2:00 PM.
+ * Only Monday to Friday are considered as working days.
+ *
+ * @returns {number} Timestamp of the next working hour
+ */
 function getNextWorkingTime() {
   const now = new Date();
   const day = now.getDay();
   const hours = now.getHours();
   const minutes = now.getMinutes();
   const currentTime = hours + minutes / 60;
-  
+
   // If it's after work hours
   if (hours >= 17) {
     now.setHours(8, 0, 0, 0); // Set to next day 8 AM
     now.setDate(now.getDate() + 1);
-  } 
+  }
   // If it's lunch hour
   else if (currentTime >= 13 && currentTime < 14) {
     now.setHours(14, 0, 0, 0); // Set to 2 PM today
@@ -511,52 +530,54 @@ function getNextWorkingTime() {
   else if (hours < 8) {
     now.setHours(8, 0, 0, 0); // Set to today 8 AM
   }
-  
+
   // If it's weekend
-  if (day === 0) { // Sunday
+  if (day === 0) {
+    // Sunday
     now.setDate(now.getDate() + 1); // Move to Monday
-  } else if (day === 6) { // Saturday
+  } else if (day === 6) {
+    // Saturday
     now.setDate(now.getDate() + 2); // Move to Monday
   }
-  
+
   return now.getTime();
 }
 
 // Start countdown function, saving the end time and start time to the document
-  /**
-   * Starts the countdown timer and saves the start and end times to the document.
-   * 
-   * @param {object} frm - The Assist form object.
-   */
+/**
+ * Starts the countdown timer and saves the start and end times to the document.
+ *
+ * @param {object} frm - The Assist form object.
+ */
 function startCountdown(frm) {
   let durationInMinutes = frm.doc.duration * 60;
   let now = new Date().getTime();
-  
+
   // Store the total duration in milliseconds
   frm.doc.total_duration_ms = durationInMinutes * 60 * 1000;
   frm.doc.remaining_duration_ms = frm.doc.total_duration_ms;
-  
+
   // Set initial countdown times
   frm.set_value("countdown_start_time", now);
   frm.set_value("countdown_end_time", now + frm.doc.total_duration_ms);
   frm.set_value("last_pause_time", null);
-  
+
   resumeCountdown(frm);
 }
 
 // Resume countdown or show "Closed In" if document is closed
-  /**
-   * Resumes the countdown timer and updates the "Close In" field on the form.
-   * 
-   * - Checks if the countdown should pause due to non-working hours or weekends.
-   * - If pausing, saves the document to persist the pause state and checks again in 5 minutes.
-   * - If resuming from a pause, adjusts the end time to the next working time.
-   * - Calculates the remaining distance and formats it into hours, minutes, and seconds.
-   * - Updates the "close_in" field on the form with the formatted elapsed time.
-   * - Stops the countdown if the document is closed.
-   * 
-   * @param {object} frm - The Assist form object containing countdown and progress data.
-   */
+/**
+ * Resumes the countdown timer and updates the "Close In" field on the form.
+ *
+ * - Checks if the countdown should pause due to non-working hours or weekends.
+ * - If pausing, saves the document to persist the pause state and checks again in 5 minutes.
+ * - If resuming from a pause, adjusts the end time to the next working time.
+ * - Calculates the remaining distance and formats it into hours, minutes, and seconds.
+ * - Updates the "close_in" field on the form with the formatted elapsed time.
+ * - Stops the countdown if the document is closed.
+ *
+ * @param {object} frm - The Assist form object containing countdown and progress data.
+ */
 function resumeCountdown(frm) {
   if (frm.doc.progress_status === "Closed") {
     displayElapsedTime(frm);
@@ -571,7 +592,7 @@ function resumeCountdown(frm) {
       if (!frm.doc.last_pause_time) {
         frm.doc.last_pause_time = now;
         frm.doc.remaining_duration_ms = frm.doc.countdown_end_time - now;
-        
+
         // Save the document to persist the pause state
         frm.save().then(() => {
           clearInterval(interval);
@@ -590,7 +611,7 @@ function resumeCountdown(frm) {
     if (frm.doc.last_pause_time) {
       let nextWorkingTime = getNextWorkingTime();
       let newEndTime = nextWorkingTime + frm.doc.remaining_duration_ms;
-      
+
       frm.set_value("countdown_end_time", newEndTime);
       frm.set_value("last_pause_time", null);
       frm.save();
@@ -625,16 +646,16 @@ function resumeCountdown(frm) {
 }
 
 // Update displayElapsedTime to use closing_time if available
-  /**
-   * Displays the elapsed time from countdown start to closing time on the form.
-   * 
-   * - Calculates the duration between the countdown start time and either the closing duration
-   *   or the countdown end time, depending on which is available.
-   * - Formats the elapsed time into hours, minutes, and seconds.
-   * - Updates the "close_in" field on the form with the formatted elapsed time.
-   * 
-   * @param {object} frm - The Assist form object containing countdown and progress data.
-   */
+/**
+ * Displays the elapsed time from countdown start to closing time on the form.
+ *
+ * - Calculates the duration between the countdown start time and either the closing duration
+ *   or the countdown end time, depending on which is available.
+ * - Formats the elapsed time into hours, minutes, and seconds.
+ * - Updates the "close_in" field on the form with the formatted elapsed time.
+ *
+ * @param {object} frm - The Assist form object containing countdown and progress data.
+ */
 function displayElapsedTime(frm) {
   let startTime = frm.doc.countdown_start_time;
   let closeTime = frm.doc.closing_duration || frm.doc.countdown_end_time; // Use closing_time if document is closed
