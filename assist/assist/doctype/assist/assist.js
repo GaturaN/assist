@@ -2,13 +2,6 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Assist", {
-  /**
-   * Refreshes the form by toggling necessary fields and custom buttons.
-   * Displays or hides the "escalated_to" and "solution_description" fields based on the progress status.
-   * Sets the "solution_description" field to read-only if the ticket is closed.
-   * Starts or resumes the countdown if the document is submitted and not closed.
-   * Displays elapsed time if the progress status is "Closed".
-   */
   refresh: function (frm) {
     // Call the function to toggle necessary fields on refresh
     toggle_necessary_fields(frm);
@@ -73,43 +66,19 @@ frappe.ui.form.on("Assist", {
     }
   },
 
-  /**
-   * Triggers when the involves_customer field is changed.
-   * Calls the toggle_necessary_fields function to toggle customer fields.
-   * @param {object} frm - The Assist form object.
-   */
   involves_customer: function (frm) {
-    // Call the function when 'involves_customer' is changed
     toggle_necessary_fields(frm);
   },
 
-  /**
-   * Triggers when the involves_supplier field is changed.
-   * Calls the toggle_necessary_fields function to toggle supplier fields.
-   * @param {object} frm - The Assist form object.
-   */
   involves_supplier: function (frm) {
-    // Call the function when 'involves_supplier' is changed
     toggle_necessary_fields(frm);
   },
 
-  /**
-   * Triggers when the involves_item field is changed.
-   * Calls the toggle_necessary_fields function to toggle item fields.
-   * @param {object} frm - The Assist form object.
-   */
   involves_item: function (frm) {
-    // Call the function when 'involves_item' is changed
     toggle_necessary_fields(frm);
   },
 
-  /**
-   * Triggers when the involves_payment field is changed.
-   * Calls the toggle_necessary_fields function to toggle payment-related fields.
-   * @param {object} frm - The Assist form object.
-   */
   involves_payment: function (frm) {
-    // Call the function when 'involves_payment' is changed
     toggle_necessary_fields(frm);
   },
 
@@ -117,7 +86,6 @@ frappe.ui.form.on("Assist", {
    * Validate the form before saving.
    * Checks that the description and solution description have at least 10 words.
    * Checks that customer, supplier, item and payment are set if they are required.
-   * @param {object} frm - The Assist form object.
    */
   validate: function (frm) {
     // Validate minimum word count for description
@@ -156,14 +124,6 @@ frappe.ui.form.on("Assist", {
     }
   },
 
-  /**
-   * Executes tasks before saving the form.
-   *
-   * - Sets the 'raised_by' field to the current user if the form is new.
-   * - (Commented) Initializes countdown start and end times if the document is new and times are not set.
-   *
-   * @param {object} frm - The Assist form object.
-   */
   before_save: function (frm) {
     // Check if the form is new and set the 'raised_by' field to the current user
     if (frm.is_new()) {
@@ -177,13 +137,6 @@ frappe.ui.form.on("Assist", {
   },
 
   // start countdown on submit
-  /**
-   * Called when the form is submitted.
-   * - If the progress status is not 'Closed', starts the countdown.
-   * - Automatically updates the document.
-   *
-   * @param {object} frm - The Assist form object.
-   */
   on_submit: function (frm) {
     if (frm.doc.progress_status !== "Closed") {
       startCountdown(frm);
@@ -192,11 +145,6 @@ frappe.ui.form.on("Assist", {
     auto_update_document(frm);
   },
 
-  /**
-   * Triggered when the 'customer' field is changed.
-   * Sets the query for 'sales_order' and 'sales_invoice' fields based on the selected customer.
-   * @param {object} frm - The Assist form object.
-   */
   customer: function (frm) {
     // set query on sales order based on selected customer
     if (frm.doc.customer) {
@@ -219,11 +167,6 @@ frappe.ui.form.on("Assist", {
     }
   },
 
-  /**
-   * Triggered when the 'supplier' field is changed.
-   * Sets the query for 'purchase_order', 'purchase_invoice' and 'purchase_receipt' fields based on the selected supplier.
-   * @param {object} frm - The Assist form object.
-   */
   supplier: function (frm) {
     // set query on purchase order based on selected supplier
     if (frm.doc.supplier) {
@@ -253,12 +196,8 @@ frappe.ui.form.on("Assist", {
     }
   },
 
-  /**
-   * Triggered when the 'escalated_to' field is changed.
-   * Prevents assigning a ticket to the same user that is currently assigned to.
-   * Auto-saves the form if the progress status is "Escalated".
-   * @param {object} frm - The Assist form object.
-   */
+  
+    // Prevents assigning a ticket to the same user that is currently assigned to.
   escalated_to: function (frm) {
     // Check if user is trying to escalate to themselves
     if (frm.doc.escalated_to === frm.doc.assigned_to) {
@@ -273,13 +212,8 @@ frappe.ui.form.on("Assist", {
     }
   },
 
-  /**
-   * Triggered when the 'assigned_to' field is changed.
-   * Prevents assigning a ticket to the same user that is currently assigned to.
-   * @param {object} frm - The Assist form object.
-   */
+  //  Prevents assigning a ticket to the same user that is currently assigned to.
   assigned_to: function (frm) {
-    // Check if user is trying to assigne to themselves
     if (frm.doc.assigned_to === frappe.session.user) {
       frm.set_value("assigned_to", "");
       frappe.throw(__("You cannot assign a ticket to yourself. Please select a different user."));
@@ -289,12 +223,6 @@ frappe.ui.form.on("Assist", {
 });
 
 // toggle_necessary_fields function
-/**
- * Toggle display of necessary fields based on the values of 'involves_customer', 'involves_supplier',
- * 'involves_item' and 'involves_payment' fields.
- *
- * @param {object} frm - The Assist form object.
- */
 function toggle_necessary_fields(frm) {
   // Set field values from the form
   let involves_customer = frm.doc.involves_customer;
@@ -341,7 +269,6 @@ function toggle_necessary_fields(frm) {
  * - "Complete" button is shown to the escalated user when the status is "Escalated".
  * - "Close" button is shown to the user who raised the ticket when the status is "Ready to Close".
  *
- * @param {object} frm - The Assist form object.
  */
 function custom_buttons(frm) {
   let status = frm.doc.progress_status;
@@ -432,11 +359,7 @@ function custom_buttons(frm) {
   }
 }
 
-/**
- * Automatically updates the Assist document when the status is changed.
- *
- * @param {object} frm - The Assist form object.
- */
+//  Automatically updates the Assist document when the status is changed.
 function auto_update_document(frm) {
   if (frm.doc.progress_status === "Closed") {
     frm.set_value("closing_duration", new Date().getTime()); // Capture the exact closing time
@@ -450,20 +373,13 @@ function auto_update_document(frm) {
     },
     callback: function (response) {
       if (!response.exc) {
-        // frappe.msgprint(__('Document has been updated automatically.'));
         frm.reload_doc();
       }
     },
   });
 }
 
-/**
- * Called when a notification is sent to the user
- * @param {object} data - The notification data
- * @param {string} data.message - The message to display
- */
 frappe.realtime.on("assist_notification", function (data) {
-  // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
     indicator: "orange",
@@ -471,7 +387,6 @@ frappe.realtime.on("assist_notification", function (data) {
 });
 
 frappe.realtime.on("ready_to_close_notification", function (data) {
-  // Display the notification on the screen
   frappe.show_alert({
     message: data.message,
     indicator: "blue",
@@ -484,7 +399,6 @@ frappe.realtime.on("ready_to_close_notification", function (data) {
  * Working hours are defined as 8:00 AM to 5:00 PM, excluding lunch break from 1:00 PM to 2:00 PM.
  * Only Monday to Friday are considered as working days.
  *
- * @returns {boolean} True if the current time is within working hours on a weekday, false otherwise.
  */
 function isWithinWorkingHours() {
   const now = new Date();
@@ -508,7 +422,6 @@ function isWithinWorkingHours() {
  * Working hours are defined as 8:00 AM to 5:00 PM, excluding lunch break from 1:00 PM to 2:00 PM.
  * Only Monday to Friday are considered as working days.
  *
- * @returns {number} Timestamp of the next working hour
  */
 function getNextWorkingTime() {
   const now = new Date();
@@ -544,11 +457,6 @@ function getNextWorkingTime() {
 }
 
 // Start countdown function, saving the end time and start time to the document
-/**
- * Starts the countdown timer and saves the start and end times to the document.
- *
- * @param {object} frm - The Assist form object.
- */
 function startCountdown(frm) {
   let durationInMinutes = frm.doc.duration * 60;
   let now = new Date().getTime();
@@ -565,7 +473,6 @@ function startCountdown(frm) {
   resumeCountdown(frm);
 }
 
-// Resume countdown or show "Closed In" if document is closed
 /**
  * Resumes the countdown timer and updates the "Close In" field on the form.
  *
@@ -576,7 +483,6 @@ function startCountdown(frm) {
  * - Updates the "close_in" field on the form with the formatted elapsed time.
  * - Stops the countdown if the document is closed.
  *
- * @param {object} frm - The Assist form object containing countdown and progress data.
  */
 function resumeCountdown(frm) {
   if (frm.doc.progress_status === "Closed") {
@@ -645,7 +551,6 @@ function resumeCountdown(frm) {
   }, 1000);
 }
 
-// Update displayElapsedTime to use closing_time if available
 /**
  * Displays the elapsed time from countdown start to closing time on the form.
  *
@@ -654,7 +559,6 @@ function resumeCountdown(frm) {
  * - Formats the elapsed time into hours, minutes, and seconds.
  * - Updates the "close_in" field on the form with the formatted elapsed time.
  *
- * @param {object} frm - The Assist form object containing countdown and progress data.
  */
 function displayElapsedTime(frm) {
   let startTime = frm.doc.countdown_start_time;
@@ -681,12 +585,6 @@ function displayElapsedTime(frm) {
 
 /**
  * Counts the number of words in a given string.
- *
- * A word is defined as a sequence of characters separated by whitespace.
- * Returns 0 if the input string is empty or not provided.
- *
- * @param {string} str - The string to count words in.
- * @returns {number} The number of words in the string.
  */
 function countWords(str) {
   if (!str) return 0;

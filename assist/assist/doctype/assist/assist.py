@@ -7,21 +7,9 @@ from datetime import datetime
 import pytz
 
 class Assist(Document):
-    """
-    Model for Assist documents.
-    
-    The methods on this class are hooks that are called by Frappe at different stages of the document's lifecycle.
-    
-    The on_submit method is called when the document is submitted. It sends a real-time notification to the assigned user.
-    
-    The on_update_after_submit method is called after the document is updated. It updates the first_responded_on and resolved_on fields.
-    
-    The on_update_after_submit method also checks if the document has been escalated and sends a notification. If the document is ready to be closed, it sends a notification to the user who raised the document.
-    """
 	
     def on_submit(self):
         realtime_notification(self)
-        # self.save()
         
     def on_update_after_submit(self):
         update_responded_by(self)
@@ -99,9 +87,8 @@ def ready_to_close_notification(self):
     Only sends notification if progress_status == "Ready to Close".
     """
 
-    # Ensure the document is in "Ready to Close" status
     if self.progress_status != "Ready to Close":
-        return  # No notification if status is not "Ready to Close"
+        return  
 
     # Ensure the raised_by user is set
     if not self.raised_by:

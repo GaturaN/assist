@@ -24,13 +24,12 @@
    "description": "Duration in hours. Just input the number.",
    "fieldname": "duration",
    "fieldtype": "Int",
-   "label": "Duration",
-   "reqd": 1
+   "label": "Duration"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-06 12:06:27.691883",
+ "modified": "2025-01-13 14:23:16.529614",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist Priority",
