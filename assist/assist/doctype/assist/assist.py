@@ -16,7 +16,6 @@ class Assist(Document):
 
      # Check if the document has been escalated and send a notification
         if self.progress_status == "Escalated" and self.escalated_to:
-            # realtime_notification(self)
             escalation_notification(self)
             
         # check if document is ready to close and send a notification

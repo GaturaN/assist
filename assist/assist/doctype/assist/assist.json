@@ -49,6 +49,7 @@
   "section_break_k93ec",
   "first_responded_on",
   "resolved_on",
+  "time_taken",
   "pause_start_time",
   "amended_from"
  ],
@@ -80,14 +81,15 @@
   {
    "bold": 1,
    "fieldname": "raised_by",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_filter": 1,
    "in_global_search": 1,
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Raised By",
-   "read_only": 1
+   "options": "User",
+   "reqd": 1
   },
   {
    "allow_in_quick_entry": 1,
@@ -344,13 +346,20 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Remaining Time"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "time_taken",
+   "fieldtype": "Data",
+   "label": "Time Taken",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_calendar_and_gantt": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-05 15:27:37.148957",
+ "modified": "2025-01-14 12:46:57.767531",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
@@ -370,7 +379,6 @@
    "write": 1
   }
  ],
- "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

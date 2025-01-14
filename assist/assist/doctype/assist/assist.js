@@ -587,6 +587,8 @@ function displayElapsedTime(frm) {
 
    if (frm.fields_dict["close_in"]) {
       frm.fields_dict["close_in"].$wrapper.html(timeDisplay);
+      // Set the value to the time_taken field
+      frm.set_value("time_taken", `${hours}h ${minutes}m ${seconds}s`);
    }
 }
 
