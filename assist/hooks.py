@@ -128,23 +128,30 @@ app_license = "MIT"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"assist.tasks.all"
-# 	],
-# 	"daily": [
-# 		"assist.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"assist.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"assist.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"assist.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+  # every 15 minutes
+  # "cron": {
+  #   "*/15 * * * *": [
+  #     "frappe.email.queue.flush"
+  #     ]
+  #   },
+	"all": [
+		# "frappe.email.queue.flush"
+    "assist.assist.email.flush"
+	],
+	# "daily": [
+	# 	"assist.tasks.daily"
+	# ],
+	# "hourly": [
+	# 	"assist.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"assist.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"assist.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------
