@@ -67,7 +67,15 @@ def realtime_notification(self):
         'document_name': self.name
     })
     notification.insert(ignore_permissions=True)
-
+    
+    # # send email notification immediately, this freezes the screen and might cause issues
+    # frappe.sendmail(
+    #     recipients=user,
+    #     subject=message_subject,
+    #     message=message_content,
+    #     # now=True
+    #     delayed=False
+    # )
 
 def ready_to_close_notification(self):
     """
