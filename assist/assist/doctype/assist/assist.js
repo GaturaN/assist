@@ -19,6 +19,9 @@ frappe.ui.form.on("Assist", {
       // Show "escalated_to" if the status is not "Open" or if the field has a value, but hide if closed and empty
       frm.toggle_display("escalated_to", (frm.doc.progress_status !== "Open" || frm.doc.escalated_to) && !(frm.doc.progress_status === "Closed" && !frm.doc.escalated_to) && !(frm.doc.progress_status === "Ready to Close" && !frm.doc.escalated_to));
 
+      // Make "escalated_to" read-only if progress_status is "Closed", check if the field has a value
+      frm.set_df_property("escalated_to", "read_only", frm.doc.progress_status === "Closed" && frm.doc.escalated_to);
+
       // Show "solution_description" if it has been set or if progress_status is not "Open"
       frm.toggle_display("solution_description", frm.doc.solution_description || frm.doc.progress_status !== "Open");
 
@@ -234,26 +237,38 @@ function toggle_necessary_fields(frm) {
    //   toggle customer fields
    if (involves_customer) {
       frm.toggle_display(customer_fields, true);
-      console.log("working!!");
    } else {
+      // clear the fields
+      frm.set_value("customer", "");
+      frm.set_value("sales_order", "");
+      frm.set_value("sales_invoice", "");
       frm.toggle_display(customer_fields, false);
    }
 
    if (involves_supplier) {
       frm.toggle_display(supplier_fields, true);
    } else {
+      // clear the fields
+      frm.set_value("supplier", "");
+      frm.set_value("purchase_order", "");
+      frm.set_value("purchase_receipt", "");
+      frm.set_value("purchase_invoice", "");
       frm.toggle_display(supplier_fields, false);
    }
 
    if (involves_item) {
       frm.toggle_display("item", true);
    } else {
+      // clear the fields
+      frm.set_value("item", "");
       frm.toggle_display("item", false);
    }
 
    if (involves_payment) {
       frm.toggle_display("payment_entry", true);
-   } else {
+    } else {
+      // clear the fields
+      frm.set_value("payment_entry", "");
       frm.toggle_display("payment_entry", false);
    }
 }
