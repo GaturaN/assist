@@ -385,13 +385,14 @@ function auto_update_document(frm) {
    });
 }
 
-frappe.realtime.on("assist_notification", function (data) {
+// set realtime notifications
+frappe.realtime.on("assigned_to_notification", function (data) {
    frappe.show_alert(
       {
          message: data.message,
          indicator: "blue",
       },
-      12
+      15
    );
 });
 
@@ -401,7 +402,7 @@ frappe.realtime.on("ready_to_close_notification", function (data) {
          message: data.message,
          indicator: "green",
       },
-      12
+      15
    );
 });
 
@@ -411,7 +412,7 @@ frappe.realtime.on("assist_escalation_notification", function (data) {
          message: data.message,
          indicator: "red",
       },
-      12
+      15
    );
 });
 

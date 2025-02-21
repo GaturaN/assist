@@ -9,18 +9,18 @@ import pytz
 class Assist(Document):
 	
     def on_submit(self):
-        realtime_notification(self)
+      realtime_notification(self)
         
     def on_update_after_submit(self):
-        update_responded_by(self)
+      update_responded_by(self)
 
      # Check if the document has been escalated and send a notification
-        if self.progress_status == "Escalated" and self.escalated_to:
-            escalation_notification(self)
+      if self.progress_status == "Escalated" and self.escalated_to:
+        escalation_notification(self)
             
         # check if document is ready to close and send a notification
-        if self.progress_status == "Ready to Close":
-            ready_to_close_notification(self)
+      if self.progress_status == "Ready to Close":
+        ready_to_close_notification(self)
 
 
 def realtime_notification(self):
@@ -29,26 +29,22 @@ def realtime_notification(self):
     The notification is sent to the user in 'assigned_to'.
     Only sends notification if progress_status is not "Ready to Close".
     """
+    # Ensure the recipient user is set
+    if not self.assigned_to:
+        frappe.throw("Notification user is not set!")
 
-    # Ensure progress_status is not "Ready to Close"
-    if self.progress_status == "Ready to Close":
-        return  
-
-    # Determine the recipient user
     user = self.assigned_to
+    document_url = frappe.utils.get_url_to_form('Assist', self.name)
+
     message_subject = f'You have been assigned to Assist: {self.name} {self.subject}'
     message_content = (
-        f'You have been assigned to Assist: <a href="{frappe.utils.get_url_to_form("Assist", self.name)}">'
-        f'{self.name} {self.subject}</a>'
+        f'You have been assigned to Assist: <a href="{document_url}">{self.name} {self.subject}</a>'
     )
 
-    # Ensure the recipient user is set
-    if not user:
-        frappe.throw("Notification user is not set!")
 
     # Publish real-time notification
     frappe.publish_realtime(
-        event="assist_notification",
+        event="assigned_to_notification",
         message={
             'docname': self.name,
             'subject': self.subject,
@@ -66,16 +62,8 @@ def realtime_notification(self):
         'document_type': 'Assist',
         'document_name': self.name
     })
+
     notification.insert(ignore_permissions=True)
-    
-    # # send email notification immediately, this freezes the screen and might cause issues
-    # frappe.sendmail(
-    #     recipients=user,
-    #     subject=message_subject,
-    #     message=message_content,
-    #     # now=True
-    #     delayed=False
-    # )
 
 def ready_to_close_notification(self):
     """
