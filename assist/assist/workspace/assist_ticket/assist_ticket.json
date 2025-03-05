@@ -1,0 +1,40 @@
+{
+ "category": "Modules",
+ "charts": [],
+ "creation": "2025-03-05 19:42:56.753078",
+ "developer_mode_only": 0,
+ "disable_user_customization": 0,
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "extends_another_page": 0,
+ "hide_custom": 0,
+ "icon": "assign",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "label": "Assist-Ticket",
+ "links": [],
+ "modified": "2025-03-05 19:48:20.073356",
+ "modified_by": "Administrator",
+ "module": "Assist",
+ "name": "Assist-Ticket",
+ "owner": "Administrator",
+ "pin_to_bottom": 0,
+ "pin_to_top": 0,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Assist",
+   "link_to": "Assist",
+   "stats_filter": "",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Priority Level",
+   "link_to": "Assist Priority",
+   "type": "DocType"
+  }
+ ],
+ "shortcuts_label": "Ask for Assistance"
+}
