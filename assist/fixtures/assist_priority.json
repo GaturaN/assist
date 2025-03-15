@@ -3,6 +3,7 @@
   "description": "High",
   "docstatus": 0,
   "doctype": "Assist Priority",
+  "duration": 0,
   "modified": "2024-10-15 11:48:13.858980",
   "name": "High"
  },
@@ -10,6 +11,7 @@
   "description": "Medium",
   "docstatus": 0,
   "doctype": "Assist Priority",
+  "duration": 0,
   "modified": "2024-10-15 11:48:24.195726",
   "name": "Medium"
  },
@@ -17,6 +19,7 @@
   "description": "Low",
   "docstatus": 0,
   "doctype": "Assist Priority",
+  "duration": 0,
   "modified": "2024-10-15 11:48:31.664203",
   "name": "Low"
  }
