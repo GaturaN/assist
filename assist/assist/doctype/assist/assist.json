@@ -82,11 +82,9 @@
    "bold": 1,
    "fieldname": "raised_by",
    "fieldtype": "Link",
-   "in_filter": 1,
    "in_global_search": 1,
    "in_list_view": 1,
    "in_preview": 1,
-   "in_standard_filter": 1,
    "label": "Raised By",
    "options": "User",
    "reqd": 1
@@ -97,7 +95,6 @@
    "fieldname": "assigned_to",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Assigned To",
    "options": "User",
    "reqd": 1
@@ -268,6 +265,8 @@
    "allow_on_submit": 1,
    "fieldname": "escalated_to",
    "fieldtype": "Link",
+   "in_filter": 1,
+   "in_list_view": 1,
    "label": "Escalated To",
    "options": "User"
   },
@@ -359,7 +358,7 @@
  "is_calendar_and_gantt": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-14 12:46:57.767531",
+ "modified": "2025-03-15 11:28:43.972742",
  "modified_by": "Administrator",
  "module": "Assist",
  "name": "Assist",
