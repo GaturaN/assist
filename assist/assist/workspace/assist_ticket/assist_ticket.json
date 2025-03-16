@@ -1,46 +1,46 @@
 {
-  "charts": [],
-  "content": "[{\"id\":\"k70L47TMqc\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Assist Ticket</span>\",\"col\":12}},{\"id\":\"Bl0Zm3UYsd\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assist Ticket\",\"col\":4}},{\"id\":\"KmW3hBhGOY\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Priority Level\",\"col\":4}}]",
-  "creation": "2025-03-15 09:35:36.808711",
-  "custom_blocks": [],
-  "docstatus": 0,
-  "doctype": "Workspace",
-  "for_user": "",
-  "hide_custom": 0,
-  "icon": "help",
-  "idx": 0,
-  "indicator_color": "",
-  "is_hidden": 0,
-  "label": "Assist Ticket",
-  "links": [],
-  "modified": "2025-03-15 09:45:06.697501",
-  "modified_by": "Administrator",
-  "module": "Assist",
-  "name": "Assist Ticket",
-  "number_cards": [],
-  "owner": "Administrator",
-  "parent_page": "",
-  "public": 1,
-  "quick_lists": [],
-  "roles": [],
-  "sequence_id": 29.0,
-  "shortcuts": [
-   {
-    "color": "Orange",
-    "doc_view": "List",
-    "label": "Assist Ticket",
-    "link_to": "Assist",
-    "stats_filter": "[[\"Assist\",\"progress_status\",\"not in\",[\"Closed\",\"Ready to Close\",null],false]]",
-    "type": "DocType"
-   },
-   {
-    "color": "Grey",
-    "doc_view": "List",
-    "label": "Priority Level",
-    "link_to": "Assist Priority",
-    "stats_filter": "[]",
-    "type": "DocType"
-   }
-  ],
-  "title": "Assist Ticket"
- }
+ "charts": [],
+ "content": "[{\"id\":\"k70L47TMqc\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Assist Ticket</span>\",\"col\":12}},{\"id\":\"Bl0Zm3UYsd\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Assist Ticket\",\"col\":4}},{\"id\":\"KmW3hBhGOY\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Priority Level\",\"col\":4}}]",
+ "creation": "2025-03-15 09:35:36.808711",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "help",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "Assist Ticket",
+ "links": [],
+ "modified": "2025-03-16 06:18:14.696960",
+ "modified_by": "Administrator",
+ "module": "Assist",
+ "name": "Assist Ticket",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 29.0,
+ "shortcuts": [
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Assist Ticket",
+   "link_to": "Assist",
+   "stats_filter": "[[\"Assist\",\"progress_status\",\"not in\",[\"Closed\",null],false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Priority Level",
+   "link_to": "Assist Priority",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Assist Ticket"
+}
